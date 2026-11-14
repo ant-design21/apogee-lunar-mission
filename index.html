@@ -1,0 +1,2726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APOGEE: Lunar Mission — Aerospace & Financial Survival Simulator</title>
+<style>
+:root{
+  --bg:#08111f;--panel:#101e30;--panel2:#14263b;--line:#263b54;
+  --text:#e9f1fb;--muted:#8ea4bd;--cyan:#65d7e8;--gold:#f4c76b;
+  --green:#76d6a3;--red:#ff7e83;--blue:#83aefb;--purple:#b392f0;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:radial-gradient(ellipse at 70% -10%,#1a3653 0%,#08111f 48%);
+  color:var(--text);
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  min-height:100vh;
+}
+button,select,input{font:inherit}
+button{cursor:pointer;transition:all .18s ease}
+button:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
+.shell{max-width:1280px;margin:auto;padding:18px 20px 36px}
+
+/* Header & Top Resource Bar */
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border:1px solid #4b7996;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#193a55,#0b1727);color:var(--cyan);font-size:24px;box-shadow:0 0 20px #5dd4e522}
+h1{font-size:clamp(20px,3.2vw,28px);letter-spacing:.08em;margin:0}
+.subtitle{color:var(--muted);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.header-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{border:1px solid #34536b;border-radius:999px;padding:5px 11px;color:var(--cyan);font-size:12px;white-space:nowrap;background:#0b1828}
+.btn-xs{background:#15283e;border:1px solid #314d68;color:#c7d7e7;border-radius:8px;padding:5px 10px;font-size:12px}
+.btn-xs:hover{border-color:var(--cyan);color:#fff}
+.lang-toggle{background:linear-gradient(135deg,#183856,#0f243a);border:1px solid var(--cyan);color:var(--cyan);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.lang-toggle:hover{background:#1f466b;color:#fff;transform:translateY(-1px)}
+
+/* Resource Telemetry Strip */
+.resource-bar{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:10px;
+  margin-bottom:16px;
+}
+.res-card{
+  background:linear-gradient(160deg,rgba(18,35,55,.95),rgba(10,21,35,.95));
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:9px 12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.res-card .r-label{font-size:11px;color:var(--muted);letter-spacing:.06em;display:flex;justify-content:space-between;align-items:center}
+.res-card .r-val{font-size:18px;font-weight:750;font-variant-numeric:tabular-nums;margin-top:2px}
+.res-card .r-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.res-card.warn{border-color:#9e742b;background:linear-gradient(160deg,rgba(54,40,18,.6),rgba(16,24,38,.95))}
+.res-card.danger{border-color:#9b3e46;background:linear-gradient(160deg,rgba(66,22,28,.65),rgba(16,24,38,.95))}
+
+/* Alert Banner */
+.alert-banner{
+  display:none;
+  margin-bottom:14px;
+  padding:11px 15px;
+  border-radius:12px;
+  border:1px solid #8b6930;
+  background:rgba(48,35,14,.85);
+  color:var(--gold);
+  font-size:13px;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.alert-banner.show{display:flex}
+.alert-banner.danger{border-color:#9e3c45;background:rgba(62,18,24,.9);color:#ffb0b4}
+
+/* Hero Banner (Preserved & Enhanced) */
+.hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:18px;min-height:135px;padding:18px 22px;background:linear-gradient(100deg,rgba(10,24,39,.96),rgba(12,30,49,.78)),radial-gradient(circle at 80% 30%,#477a9a,#0a1523);margin-bottom:16px}
+.hero:after{content:"";position:absolute;width:210px;height:210px;border-radius:50%;right:7%;top:-75px;background:radial-gradient(circle at 35% 35%,#d8e6e8 0%,#8baeb9 24%,#456c86 53%,#172d48 72%);box-shadow:0 0 55px #5da8d355;pointer-events:none}
+.hero:before{content:"";position:absolute;width:76px;height:76px;border-radius:50%;right:28%;top:18px;background:#d9e5ee;box-shadow:0 0 24px #b9d8ed88;opacity:.85;pointer-events:none}
+.hero-content{position:relative;z-index:1;max-width:680px}
+.eyebrow{color:var(--cyan);font-size:11px;letter-spacing:.18em;font-weight:700}
+.hero h2{font-size:clamp(20px,3.2vw,30px);line-height:1.15;margin:6px 0}
+.hero p{color:#b4c6d8;margin:0;font-size:13px}
+
+/* Navigation Tabs */
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{
+  background:#0e1d30;
+  border:1px solid #28405c;
+  color:var(--muted);
+  border-radius:11px;
+  padding:9px 14px;
+  font-weight:650;
+  font-size:13px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.tab-btn:hover{border-color:#497399;color:var(--text)}
+.tab-btn.active{background:linear-gradient(135deg,#183552,#11263d);border-color:var(--cyan);color:var(--cyan);box-shadow:0 4px 16px #5dd4e51f}
+.badge{background:#1b3652;color:var(--cyan);font-size:11px;padding:1px 6px;border-radius:99px}
+
+/* Main Grid */
+.grid{display:grid;grid-template-columns:1.18fr .82fr;gap:18px;align-items:start}
+.panel{background:linear-gradient(160deg,rgba(20,38,59,.96),rgba(13,27,43,.96));border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 12px 35px #0003;margin-bottom:16px}
+.panel h3{margin:0 0 12px;font-size:16px;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.section-label{color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:14px 0 8px;border-bottom:1px solid #1f334a;padding-bottom:4px}
+
+/* Form Fields */
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0}
+.field label{font-weight:600;font-size:13px}
+.field small{display:block;color:var(--muted);font-weight:400;font-size:11px}
+select,input[type=text]{background:#091626;color:var(--text);border:1px solid #34506c;border-radius:9px;padding:7px 10px}
+select{max-width:62%;padding-right:26px}
+input[type=range]{width:46%;accent-color:var(--cyan)}
+.value{min-width:62px;text-align:right;color:var(--cyan);font-variant-numeric:tabular-nums;font-weight:600;font-size:13px}
+
+/* Stage Cards */
+.stage-box{background:#0b1828;border:1px solid #273e57;border-radius:12px;padding:12px;margin-bottom:10px}
+.stage-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700;color:var(--cyan);font-size:13px}
+.toggle-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.check-chip{
+  display:flex;align-items:center;gap:6px;background:#0b1828;border:1px solid #2d4763;
+  padding:7px 11px;border-radius:9px;font-size:12px;cursor:pointer;user-select:none;
+}
+.check-chip input{accent-color:var(--cyan);margin:0}
+
+/* Telemetry Stats */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.stat{padding:10px 12px;border:1px solid #2a4059;background:#0b1929;border-radius:11px}
+.stat .name{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.stat .num{font-size:20px;font-weight:750;margin-top:2px;font-variant-numeric:tabular-nums}
+.stat .unit{font-size:11px;color:var(--muted);margin-left:3px;font-weight:400}
+
+/* Pre-launch Checklist */
+.checklist{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
+.checklist li{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 10px;border-radius:8px;font-size:12px;background:#0a1625;border:1px solid #23384f;
+}
+.checklist li.pass{border-color:#2b664f;color:var(--green)}
+.checklist li.fail{border-color:#7d3940;color:var(--red)}
+
+/* Status & Buttons */
+.status{margin-top:11px;padding:10px 12px;border-radius:10px;background:#0b1929;border:1px solid #2a4059;color:#b8c9da;font-size:12.5px}
+.status.good{border-color:#347b60;color:var(--green)}
+.status.warn{border-color:#8b6930;color:var(--gold)}
+.status.bad{border-color:#88454b;color:var(--red)}
+
+.actions{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}
+.primary,.secondary,.danger-btn,.gold-btn{border:0;border-radius:10px;padding:10px 15px;font-weight:700;font-size:13px}
+.primary{background:linear-gradient(110deg,#5dd4e5,#83e0cf);color:#071522;box-shadow:0 5px 18px #4ec7d533}
+.primary:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.secondary{background:#1b3047;color:#c7d7e7;border:1px solid #38516b}
+.secondary:hover{border-color:var(--cyan);color:#fff}
+.danger-btn{background:#471d24;color:#ffb4b8;border:1px solid #8a3a43}
+.gold-btn{background:linear-gradient(110deg,#e7b85c,#f6d58e);color:#1d1404}
+
+/* Cards for Missions, Tech, Blueprints */
+.card-list{display:grid;gap:10px}
+.item-card{
+  background:#0b1828;border:1px solid #263d56;border-radius:12px;padding:12px;
+  display:flex;flex-direction:column;gap:7px;
+}
+.item-card.active-card{border-color:var(--cyan);background:linear-gradient(160deg,#0f243b,#0b1828)}
+.item-card.locked{opacity:.58}
+.item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.item-title{font-weight:700;font-size:14px;color:var(--text)}
+.item-meta{font-size:12px;color:var(--muted)}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#162d46;color:var(--cyan);border:1px solid #2a4c6e}
+.tag.gold{background:#332712;color:var(--gold);border-color:#6d5121}
+.tag.green{background:#133226;color:var(--green);border-color:#296950}
+.tag.red{background:#38171c;color:var(--red);border-color:#752e37}
+
+/* Flight Simulation Scene (Preserved & Upgraded) */
+.flight-scene{
+  height:230px;position:relative;overflow:hidden;border-radius:13px;border:1px solid #29445e;
+  background:radial-gradient(circle at 20% 20%,#163252,#071426 65%);
+}
+.stars{
+  position:absolute;inset:0;
+  background-image:radial-gradient(#fff 1px,transparent 1px),radial-gradient(#8be4ff 1px,transparent 1px);
+  background-size:48px 48px,73px 73px;
+  background-position:0 0,24px 31px;
+  opacity:.35;
+}
+.earthline{position:absolute;bottom:-132px;left:-10%;width:120%;height:190px;border-radius:50%;background:linear-gradient(#4c9ab4,#174b70 55%,#0a253f);box-shadow:0 -8px 35px #66d9e8aa}
+.moon{position:absolute;right:11%;top:22px;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 28%,#edf0e9,#9caeb5 60%,#5e7486);box-shadow:0 0 25px #c5d8e477}
+.rocket{
+  position:absolute;z-index:3;bottom:34px;left:18%;font-size:38px;
+  filter:drop-shadow(0 0 12px #ffe09a);
+  transition:left 4.2s cubic-bezier(.25,.8,.25,1),bottom 4.2s cubic-bezier(.25,.8,.25,1),transform 4.2s ease;
+}
+.rocket.fly{left:72%;bottom:68%;transform:rotate(38deg)}
+.rocket.fail-arc{left:46%;bottom:24%;transform:rotate(145deg)}
+.booster-drop{
+  position:absolute;z-index:2;left:42%;bottom:48%;font-size:20px;opacity:0;
+  transition:all 2.2s ease;
+}
+.booster-drop.active{opacity:1;bottom:18%;left:36%;transform:rotate(-65deg)}
+.flight-caption{position:absolute;top:11px;left:13px;color:#d6e6f5;font-size:11.5px;letter-spacing:.08em;font-weight:700;background:#071322aa;padding:4px 9px;border-radius:6px;border:1px solid #284563}
+.live-telem{position:absolute;bottom:10px;right:12px;color:var(--cyan);font-size:11px;font-variant-numeric:tabular-nums;background:#071322cc;padding:4px 8px;border-radius:6px;border:1px solid #24405c}
+
+.report{margin-top:12px;padding:13px;border:1px solid #304a64;border-radius:12px;background:#0a1828}
+.report h4{margin:0 0 6px;font-size:14px}
+.report p{margin:4px 0;color:#b8c9d9;font-size:12.5px}
+
+/* Tables for Ledger & Logs */
+.table-wrap{overflow-x:auto;border:1px solid #243b54;border-radius:10px;background:#091625}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #1a2d42}
+th{color:var(--muted);font-weight:600;background:#0d1e31;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.num-col{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pos{color:var(--green)}
+.neg{color:var(--red)}
+
+/* Modal for Bankruptcy / Restructuring / Toast */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(4,10,18,.84);backdrop-filter:blur(4px);
+  display:none;place-items:center;z-index:100;padding:16px;
+}
+.modal-backdrop.show{display:grid}
+.modal{
+  max-width:560px;width:100%;background:#101f33;border:1px solid #3c5c7d;border-radius:18px;
+  padding:22px;box-shadow:0 20px 60px #0008;
+}
+.modal h3{margin:0 0 10px;font-size:19px}
+.toast{
+  position:fixed;bottom:20px;right:20px;z-index:120;
+  background:#12273f;border:1px solid var(--cyan);color:#fff;
+  padding:11px 16px;border-radius:11px;font-size:13px;box-shadow:0 10px 30px #0006;
+  transform:translateY(120%);opacity:0;transition:all .25s ease;max-width:360px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.meter{height:8px;background:#081522;border-radius:99px;overflow:hidden;margin-top:6px}
+.meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,#58c8de,#83e0bd);transition:width .3s}
+
+footer{text-align:center;color:#627b94;font-size:11px;margin:22px 0 8px}
+
+@media(max-width:880px){
+  .grid{grid-template-columns:1fr}
+  .hero:after{right:-80px;opacity:.45}
+  .hero:before{right:23%;opacity:.35}
+}
+@media(max-width:560px){
+  .shell{padding:12px}
+  .field{flex-direction:column;align-items:flex-start}
+  select,input[type=range]{width:100%;max-width:100%}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="logo">✦</div>
+      <div>
+        <h1>APOGEE</h1>
+        <div class="subtitle" id="hdrSubtitle">Lunar Mission & Aerospace Agency Simulator</div>
+      </div>
+    </div>
+    <div class="header-controls">
+      <button class="lang-toggle" id="langToggleBtn" title="Switch Language / 切換中英文">🌐 EN / 繁中</button>
+      <span class="pill" id="campaignStagePill">Campaign · 0/6 Complete</span>
+      <button class="btn-xs" id="advanceMonthBtn">⏭ Advance Month</button>
+      <button class="btn-xs" id="manualSaveBtn">💾 Save</button>
+      <button class="btn-xs" id="resetCampaignBtn" style="color:var(--red)">↺ Reset</button>
+    </div>
+  </header>
+
+  <!-- Top Resource & Financial Telemetry Bar -->
+  <div class="resource-bar">
+    <div class="res-card" id="fundsCard">
+      <div class="r-label"><span id="lblFundsTitle">AVAILABLE FUNDS</span><span id="financeStageBadge" class="tag green">Healthy</span></div>
+      <div class="r-val" id="resFunds">$120,000</div>
+      <div class="r-sub" id="resCreditSub">Credit Available: $100,000</div>
+    </div>
+    <div class="res-card" id="debtCard">
+      <div class="r-label"><span id="lblDebtTitle">BAILOUT DEBT</span><span id="aidStatusTag" class="tag">Aid Ready</span></div>
+      <div class="r-val" id="resDebt">$0</div>
+      <div class="r-sub" id="resDebtSub">Auto-Repay: 0%</div>
+    </div>
+    <div class="res-card">
+      <div class="r-label"><span id="lblSciTitle">SCIENCE POINTS</span><span>🔬 R&D</span></div>
+      <div class="r-val" style="color:var(--cyan)" id="resScience">20</div>
+      <div class="r-sub" id="resPassiveSub">Patent Income: $0/mo</div>
+    </div>
+    <div class="res-card">
+      <div class="r-label"><span id="lblRepTitle">REPUTATION</span><span id="lblRepTag">⭐ REP</span></div>
+      <div class="r-val" style="color:var(--gold)" id="resRep">10</div>
+      <div class="r-sub" id="resUpkeepSub">Monthly OpEx: -$8,000</div>
+    </div>
+    <div class="res-card">
+      <div class="r-label"><span id="lblCycleTitle">AGENCY CYCLE</span><span id="lblCycleTag">📅 TIME</span></div>
+      <div class="r-val" id="resMonth">Month 1</div>
+      <div class="r-sub" id="resActiveMissionSub">Target: M1 Suborbital</div>
+    </div>
+  </div>
+
+  <!-- Financial Alert Banner -->
+  <div class="alert-banner" id="alertBanner">
+    <span id="alertText">⚠️ Financial Warning: Funds below $25,000 threshold.</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="gold-btn" id="bannerAidBtn" style="display:none;padding:6px 12px;font-size:12px">🆘 Claim Emergency Bailout (+$80,000)</button>
+      <button class="secondary" id="bannerFinanceTabBtn" style="padding:6px 12px;font-size:12px">Open Finance Center →</button>
+    </div>
+  </div>
+
+  <!-- Hero Banner -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="eyebrow" id="heroEyebrow">MISSION ENGINEERING & AGENCY OPERATIONS / APOGEE</div>
+      <h2 id="heroTitle">Beyond the Horizon · From LEO to Deep Space</h2>
+      <p id="heroDesc">Architect multi-stage launch vehicles, manage free engineering blueprints, fulfill commercial contracts, advance R&D, and navigate strict financial survival rules to reach the Moon.</p>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="workshop" id="tabBtnWorkshop">🚀 01 Vehicle Workshop</button>
+    <button class="tab-btn" data-tab="missions" id="tabBtnMissions">🛰️ 02 Campaign & Contracts <span class="badge" id="missionBadge">0/6</span></button>
+    <button class="tab-btn" data-tab="rnd" id="tabBtnRnd">🔬 03 R&D & Facilities</button>
+    <button class="tab-btn" data-tab="finance" id="tabBtnFinance">💰 04 Financial Survival <span class="badge" id="financeBadge">OK</span></button>
+    <button class="tab-btn" data-tab="logs" id="tabBtnLogs">📋 05 Flight & Incident Logs <span class="badge" id="logsBadge">0</span></button>
+  </nav>
+
+  <!-- Main 2-Column Layout -->
+  <div class="grid">
+    <!-- LEFT WORKSPACE (Tabbed Content) -->
+    <div>
+      <!-- TAB 1: ENGINEERING WORKSHOP & BLUEPRINTS -->
+      <div class="tab-pane active" id="tab-workshop">
+        <section class="panel">
+          <h3>
+            <span id="wsPanelTitle">01 / Multi-Stage Vehicle Workshop</span>
+            <span class="tag" id="stageModeTag">2-Stage Configuration</span>
+          </h3>
+
+          <div class="toggle-row">
+            <label class="check-chip"><input type="checkbox" id="useStage2" checked> <span id="lblUseStage2">Enable Stage 2 Upper Stage (Boosts Orbital Δv)</span></label>
+            <label class="check-chip"><input type="checkbox" id="equipRecovery"> <span id="lblEquipRec">Booster Recovery Kit (+$4,500 · Refunds 35% Stage 1 on success)</span></label>
+            <label class="check-chip"><input type="checkbox" id="buyInsurance"> <span id="lblBuyIns">Launch Insurance (+12% Launch Cost · Covers 50% Glitch/Failure loss)</span></label>
+          </div>
+
+          <!-- Stage 1 -->
+          <div class="stage-box">
+            <div class="stage-header">
+              <span id="s1HeaderTitle">STAGE 1 BOOSTER</span>
+              <span id="s1CostTag" style="color:var(--gold);font-size:12px">Hardware: $22,500</span>
+            </div>
+            <div class="field">
+              <div><label for="s1Engine" id="lblS1Eng">Stage 1 Main Engine</label><small id="s1EngineSpec">Thrust 1850 kN · Isp 335s</small></div>
+              <select id="s1Engine"></select>
+            </div>
+            <div class="field">
+              <div><label for="s1Structure" id="lblS1Str">Stage 1 Airframe Structure</label><small id="s1StructSpec">Dry 2250 kg · Margin 0.94</small></div>
+              <select id="s1Structure"></select>
+            </div>
+            <div class="field">
+              <div><label for="s1Fuel" id="lblS1Fuel">Stage 1 Propellant Load</label><small id="lblS1FuelSub">Controls liftoff TWR and booster burn time</small></div>
+              <input id="s1Fuel" type="range" min="25" max="100" value="80">
+              <span class="value" id="s1FuelVal">80%</span>
+            </div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="stage-box" id="stage2Box">
+            <div class="stage-header">
+              <span id="s2HeaderTitle">STAGE 2 UPPER STAGE</span>
+              <span id="s2CostTag" style="color:var(--gold);font-size:12px">Hardware: $17,000</span>
+            </div>
+            <div class="field">
+              <div><label for="s2Engine" id="lblS2Eng">Stage 2 Upper Engine</label><small id="s2EngineSpec">Vacuum-optimized high-Isp engine</small></div>
+              <select id="s2Engine"></select>
+            </div>
+            <div class="field">
+              <div><label for="s2Structure" id="lblS2Str">Stage 2 Airframe Structure</label><small id="s2StructSpec">Dry 750 kg · Lightweight interstage</small></div>
+              <select id="s2Structure"></select>
+            </div>
+            <div class="field">
+              <div><label for="s2Fuel" id="lblS2Fuel">Stage 2 Propellant Load</label><small id="lblS2FuelSub">Controls orbital insertion & trans-lunar Δv</small></div>
+              <input id="s2Fuel" type="range" min="20" max="100" value="75">
+              <span class="value" id="s2FuelVal">75%</span>
+            </div>
+          </div>
+
+          <!-- Payload -->
+          <div class="stage-box">
+            <div class="stage-header">
+              <span id="payHeaderTitle">PAYLOAD INTEGRATION</span>
+              <span id="payloadReqTag" style="color:var(--cyan);font-size:12px">Target Req: ≥ 80 kg</span>
+            </div>
+            <div class="field">
+              <div><label for="payloadType" id="lblPayType">Payload Class & Instruments</label><small id="payloadDesc">Affects science yield and mission compatibility</small></div>
+              <select id="payloadType"></select>
+            </div>
+            <div class="field">
+              <div><label for="payloadMass" id="lblPayMass">Payload Mass (kg)</label><small id="lblPayMassSub">Heavier payloads require higher Δv & propellant</small></div>
+              <input id="payloadMass" type="range" min="50" max="1200" step="25" value="125">
+              <span class="value" id="payloadMassVal">125 kg</span>
+            </div>
+          </div>
+
+          <!-- Blueprints (100% Free Save & Duplicate) -->
+          <div class="section-label" id="bpSectionLabel">ENGINEERING BLUEPRINTS (Saving & Duplicating are 100% FREE · Costs apply only at launch)</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <input type="text" id="bpNameInput" placeholder="Enter blueprint name (e.g., Falcon-II Lunar)" style="flex:1;min-width:180px">
+            <button class="secondary" id="saveBpBtn">📐 Save Blueprint ($0)</button>
+          </div>
+          <div class="card-list" id="blueprintList"></div>
+        </section>
+      </div>
+
+      <!-- TAB 2: CAMPAIGN MISSIONS & COMMERCIAL CONTRACTS -->
+      <div class="tab-pane" id="tab-missions">
+        <section class="panel">
+          <h3>
+            <span id="campPanelTitle">02A / Main Campaign Progression</span>
+            <span class="tag gold" id="campUnlockTag">Sequential Unlock · Complete prior to unlock next</span>
+          </h3>
+          <p id="campPanelDesc" style="color:var(--muted);font-size:12.5px;margin-top:0">Complete campaign milestones to earn government grants, science points, and reputation, unlocking lunar and deep-space missions.</p>
+          <div class="card-list" id="campaignMissionList"></div>
+        </section>
+
+        <section class="panel">
+          <h3>
+            <span id="contPanelTitle">02B / Commercial & Government Contracts</span>
+            <span class="tag" id="contAdvanceTag">25% Upfront Advance</span>
+          </h3>
+          <p id="contPanelDesc" style="color:var(--muted);font-size:12.5px;margin-top:0">
+            Terms: Signing grants an immediate <b>25% upfront advance</b>; successful delivery pays the remaining <b>75% balance</b> (20% auto-deducted if Bailout Debt exists); failure requires refunding <b>50% of the advance</b> (12.5% of total contract value). Max 1 active contract.
+          </p>
+          <div id="activeContractBox" style="margin-bottom:12px"></div>
+          <div class="card-list" id="contractList"></div>
+        </section>
+      </div>
+
+      <!-- TAB 3: R&D TECH TREE & FACILITY UPGRADES -->
+      <div class="tab-pane" id="tab-rnd">
+        <section class="panel">
+          <h3>
+            <span id="rndPanelTitle">03A / Aerospace Research & Development</span>
+            <span class="tag" id="rndLockNotice">R&D Systems Ready</span>
+          </h3>
+          <p id="rndPanelDesc" style="color:var(--muted);font-size:12.5px;margin-top:0">Spend Science Points (🔬) to unlock advanced cryogenic/ion engines, carbon-nano composites, booster recovery upgrades, and passive patent licensing income.</p>
+          <div class="card-list" id="techTreeList"></div>
+        </section>
+
+        <section class="panel">
+          <h3>
+            <span id="facPanelTitle">03B / Space Center Facilities & Maintenance</span>
+            <span class="tag gold" id="facPanelTag">Upgrades boost limits · Increases monthly OpEx</span>
+          </h3>
+          <div class="card-list" id="facilityList"></div>
+        </section>
+      </div>
+
+      <!-- TAB 4: FINANCIAL SURVIVAL SYSTEM & LEDGER -->
+      <div class="tab-pane" id="tab-finance">
+        <section class="panel">
+          <h3>
+            <span id="finPanelTitle">04A / Financial Survival & Crisis Management</span>
+            <span id="finPanelBadge" class="tag green">Normal Operations</span>
+          </h3>
+
+          <div class="stats" style="margin-bottom:12px">
+            <div class="stat">
+              <div class="name" id="finCard1Name">AVAILABLE FUNDS / OVERDRAFT</div>
+              <div class="num" id="finFundsVal">$120,000</div>
+              <div style="font-size:11px;color:var(--muted)" id="finCard1Sub">Max Credit Line: -$100,000</div>
+            </div>
+            <div class="stat">
+              <div class="name" id="finCard2Name">REMAINING BAILOUT DEBT</div>
+              <div class="num" id="finAidDebtVal">$0</div>
+              <div style="font-size:11px;color:var(--muted)" id="finCard2Sub">20% auto-repaid from contracts</div>
+            </div>
+            <div class="stat">
+              <div class="name" id="finCard3Name">MONTHLY OPERATING OPEX</div>
+              <div class="num neg" id="finMonthlyExpVal">-$8,000</div>
+              <div style="font-size:11px;color:var(--muted)" id="finCard3Sub">Base crew + Facility upkeep</div>
+            </div>
+            <div class="stat">
+              <div class="name" id="finCard4Name">MONTHLY PATENT INCOME</div>
+              <div class="num pos" id="finMonthlyIncVal">+$0</div>
+              <div style="font-size:11px;color:var(--muted)" id="finCard4Sub">R&D technology licensing</div>
+            </div>
+          </div>
+
+          <div class="status" id="finCrisisExplain">
+            Financial status healthy. Dropping below $25,000 triggers a Financial Warning and unlocks Emergency Bailout funding.
+          </div>
+
+          <!-- Emergency Aid & Restructuring Actions -->
+          <div class="section-label" id="finActionsLabel">EMERGENCY BAILOUT & RESTRUCTURING ACTIONS</div>
+          <div class="card-list">
+            <div class="item-card" id="emergencyAidCard">
+              <div class="item-top">
+                <div>
+                  <div class="item-title" id="aidCardTitle">🆘 National Aerospace Emergency Bailout</div>
+                  <div class="item-meta" id="aidCardMeta">Eligibility: Funds below $25,000 or in debt · No unresolved severe restructuring · Limit 1 per campaign</div>
+                </div>
+                <span class="tag gold" id="aidLimitTag">Available (1/1)</span>
+              </div>
+              <div style="font-size:12.5px;color:#c5d6e8" id="aidCardDesc">
+                Receive an immediate <b>+$80,000</b> cash injection; creates <b>$96,000</b> Bailout Debt (includes $16,000 premium), automatically deducting <b>20%</b> from all future contract payouts until repaid.
+              </div>
+              <div>
+                <button class="gold-btn" id="claimAidBtn">Claim Emergency Bailout (+$80,000)</button>
+              </div>
+            </div>
+
+            <div class="item-card" id="restructureCard">
+              <div class="item-top">
+                <div>
+                  <div class="item-title" id="restCardTitle">⚖️ Financial Restructuring & Asset Liquidation</div>
+                  <div class="item-meta" id="restCardMeta">Stage 2 Restructuring options: Liquidate spare parts, downgrade facilities to cut OpEx, or execute a one-time debt restructuring</div>
+                </div>
+                <span class="tag" id="restructureTag">Inactive</span>
+              </div>
+              <div class="actions" style="margin-top:4px">
+                <button class="secondary" id="sellAssetsBtn">📦 Liquidate Spare Parts (+$18,000 / -3 Rep)</button>
+                <button class="secondary" id="downgradePadBtn">🏗️ Downgrade Facility (+$15,000 / Lower OpEx)</button>
+                <button class="danger-btn" id="oneTimeRestructureBtn">📑 One-Time Debt Restructuring (Cut 40% Overdraft · 1x)</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>
+            <span id="ledgerPanelTitle">04B / Agency Financial & Debt Ledger</span>
+            <span class="tag" id="ledgerCountTag">0 Entries</span>
+          </h3>
+          <div class="table-wrap" style="max-height:340px;overflow-y:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th id="thCycle">Cycle</th>
+                  <th id="thDesc">Description / Account</th>
+                  <th class="num-col" id="thDelta">Amount</th>
+                  <th class="num-col" id="thBal">Balance</th>
+                  <th class="num-col" id="thDebt">Bailout Debt</th>
+                </tr>
+              </thead>
+              <tbody id="ledgerTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- TAB 5: FLIGHT ARCHIVES & FAILURE ANALYSIS -->
+      <div class="tab-pane" id="tab-logs">
+        <section class="panel">
+          <h3>
+            <span id="logsPanelTitle">05 / Flight Archives & Failure Investigation</span>
+            <span class="tag" id="successRateTag">Success Rate: —</span>
+          </h3>
+          <p id="logsPanelDesc" style="color:var(--muted);font-size:12.5px;margin-top:0">
+            Complete telemetry archive of every launch, rocket configuration, net financial P&L, and black-box science data recovered from anomalies.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th id="thLogCycle">Cycle</th>
+                  <th id="thLogMission">Mission / Vehicle</th>
+                  <th id="thLogTelem">Telemetry</th>
+                  <th id="thLogOutcome">Outcome & Severity</th>
+                  <th class="num-col" id="thLogPnl">Net P&L</th>
+                  <th class="num-col" id="thLogSci">Sci / Rep</th>
+                </tr>
+              </thead>
+              <tbody id="flightLogTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR: PERSISTENT LIVE TELEMETRY, CHECKLIST & ROCKET LAUNCH SIMULATION -->
+    <aside>
+      <section class="panel">
+        <h3>
+          <span id="sideTelemTitle">Live Engineering Telemetry</span>
+          <span class="tag" id="targetMissionTag">Target: M1 Suborbital</span>
+        </h3>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="name" id="statMassName">LIFT-OFF MASS</div>
+            <div class="num" id="mass">—<span class="unit">kg</span></div>
+          </div>
+          <div class="stat">
+            <div class="name" id="statTwrName">LIFTOFF TWR</div>
+            <div class="num" id="twr">—<span class="unit">TWR</span></div>
+          </div>
+          <div class="stat">
+            <div class="name" id="statDvName">TOTAL DELTA-V</div>
+            <div class="num" id="dv">—<span class="unit">km/s</span></div>
+          </div>
+          <div class="stat">
+            <div class="name" id="statMarginName">DESIGN MARGIN</div>
+            <div class="num" id="margin">—<span class="unit">%</span></div>
+          </div>
+        </div>
+
+        <div class="section-label" id="costBreakLabel">LAUNCH COST BREAKDOWN (HARDWARE + OPEX + OPTIONS)</div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;margin:4px 0">
+          <span style="color:var(--muted)" id="lblBuildCost">Hardware & Propellant</span>
+          <strong id="buildCostText">$0</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;margin:4px 0">
+          <span style="color:var(--muted)" id="lblOpsCost">Range Ops / Recovery / Insurance</span>
+          <strong id="opsCostText">$0</strong>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13.5px;margin:6px 0;padding-top:6px;border-top:1px solid #223850">
+          <span id="lblTotalCost">Total Launch Expenditure</span>
+          <strong style="color:var(--gold)" id="totalLaunchCostText">$0</strong>
+        </div>
+
+        <div class="section-label" id="checklistLabel">PRE-LAUNCH MANDATORY CHECKLIST</div>
+        <ul class="checklist" id="prelaunchChecklist"></ul>
+
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-top:10px">
+          <span style="color:var(--muted)" id="lblRelScore">Engineering Reliability Score</span>
+          <strong id="score">—</strong>
+        </div>
+        <div class="meter"><span id="scoreBar"></span></div>
+
+        <div class="status" id="engineeringStatus">Configure rocket parameters and pass all pre-launch checks.</div>
+
+        <div class="actions">
+          <button class="primary" id="launchBtn" style="flex:1">🚀 INITIATE LAUNCH</button>
+          <button class="secondary" id="resetDesignBtn">Reset</button>
+        </div>
+      </section>
+
+      <!-- Flight Operations & Iconic Rocket Animation -->
+      <section class="panel" id="simulation">
+        <h3>
+          <span id="flightOpsTitle">FLIGHT OPERATIONS</span>
+          <span class="tag" id="flightPhaseTag">STANDBY</span>
+        </h3>
+        <div class="flight-scene">
+          <div class="stars"></div>
+          <div class="flight-caption" id="flightCaption">FLIGHT DIRECTOR: STANDBY</div>
+          <div class="live-telem" id="liveTelemBox">ALT: 0.0 km · VEL: 0 m/s</div>
+          <div class="moon"></div>
+          <div class="earthline"></div>
+          <div class="booster-drop" id="boosterDrop">🛰️</div>
+          <div class="rocket" id="rocket">🚀</div>
+        </div>
+        <div class="report" id="report">
+          <h4 id="repStandbyTitle">Telemetry Report Pending</h4>
+          <p id="repStandbyDesc">Complete vehicle integration and pass all pre-launch checks, then click Initiate Launch to begin flight operations.</p>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <footer id="footerText">APOGEE: Lunar Mission · Aerospace Engineering & Financial Survival Simulator · Auto-saved to localStorage</footer>
+</div>
+
+<!-- Bankruptcy / Critical Event Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toastBox"></div>
+
+<script>
+(() => {
+  const STORAGE_KEY = "apogee_lunar_campaign_v2";
+  const $ = id => document.getElementById(id);
+
+  // =========================================================================
+  // 0. COMPLETE BILINGUAL I18N DICTIONARY (EN / ZH Traditional Chinese)
+  // =========================================================================
+  const I18N = {
+    en: {
+      pageTitle: "APOGEE: Lunar Mission — Aerospace & Financial Survival Simulator",
+      hdrSubtitle: "Lunar Mission & Aerospace Agency Simulator",
+      langBtn: "🌐 EN / 繁中",
+      campaignPill: (done, total) => `Campaign · ${done}/${total} Complete`,
+      advanceMonthBtn: "⏭ Advance Month",
+      manualSaveBtn: "💾 Save",
+      resetCampaignBtn: "↺ Reset",
+      lblFundsTitle: "AVAILABLE FUNDS",
+      creditAvail: (amt) => `Credit Available: ${amt}`,
+      lblDebtTitle: "BAILOUT DEBT",
+      aidUsed: "Aid Used",
+      aidReady: "Aid Ready",
+      autoRepayOn: "Auto-Repay: 20% of contracts",
+      autoRepayOff: "No active bailout debt",
+      lblSciTitle: "SCIENCE POINTS",
+      patentSub: (amt) => `Patent Income: +${amt}/mo`,
+      lblRepTitle: "REPUTATION",
+      lblRepTag: "⭐ REP",
+      upkeepSub: (amt) => `Monthly OpEx: -${amt}`,
+      lblCycleTitle: "AGENCY CYCLE",
+      lblCycleTag: "📅 TIME",
+      monthLabel: (m) => `Month ${m}`,
+      targetSub: (t) => `Target: ${t}`,
+      stageHealthy: "Healthy",
+      stageWarn: "Warning (<$25k)",
+      stageCrisis: "Stage 1: Crisis",
+      stageRestructure: "Stage 2: Restructuring",
+      finBadgeOk: "OK",
+      finBadgeWarn: "Warn",
+      finBadgeCrisis: "Crisis",
+      finBadgeRest: "Restruct",
+      alertWarn: (bal) => `⚠️ Financial Warning: Available funds below $25,000 (${bal}). Monitor launch & OpEx costs!`,
+      alertCrisis: (bal) => `⚠️ Stage 1 Financial Crisis: Operating on credit overdraft (${bal}). Non-essential R&D paused; missions & repairs remain active.`,
+      alertRestructure: "🚨 Stage 2 Financial Restructuring Active! High-cost facility upgrades & R&D frozen. Complete active missions, liquidate assets, or restructure debt.",
+      bannerAidBtn: "🆘 Claim Emergency Bailout (+$80,000)",
+      bannerFinanceTabBtn: "Open Finance Center →",
+      heroEyebrow: "MISSION ENGINEERING & AGENCY OPERATIONS / APOGEE",
+      heroTitle: "Beyond the Horizon · From LEO to Deep Space",
+      heroDesc: "Architect multi-stage launch vehicles, manage free engineering blueprints, fulfill commercial contracts, advance R&D, and navigate strict financial survival rules to reach the Moon.",
+      tabWorkshop: "🚀 01 Vehicle Workshop",
+      tabMissions: "🛰️ 02 Campaign & Contracts",
+      tabRnd: "🔬 03 R&D & Facilities",
+      tabFinance: "💰 04 Financial Survival",
+      tabLogs: "📋 05 Flight & Incident Logs",
+      wsPanelTitle: "01 / Multi-Stage Vehicle Workshop",
+      stageMode2: "2-Stage Configuration",
+      stageMode1: "1-Stage Configuration",
+      lblUseStage2: "Enable Stage 2 Upper Stage (Boosts Orbital Δv)",
+      lblEquipRec: "Booster Recovery Kit (+$4,500 · Refunds 35% Stage 1 on success)",
+      lblBuyIns: "Launch Insurance (+12% Launch Cost · Covers 50% Glitch/Failure loss)",
+      s1HeaderTitle: "STAGE 1 BOOSTER",
+      s2HeaderTitle: "STAGE 2 UPPER STAGE",
+      hardwareTag: (amt) => `Hardware: ${amt}`,
+      lblS1Eng: "Stage 1 Main Engine",
+      lblS1Str: "Stage 1 Airframe Structure",
+      lblS1Fuel: "Stage 1 Propellant Load",
+      lblS1FuelSub: "Controls liftoff TWR and booster burn time",
+      lblS2Eng: "Stage 2 Upper Engine",
+      lblS2Str: "Stage 2 Airframe Structure",
+      lblS2Fuel: "Stage 2 Propellant Load",
+      lblS2FuelSub: "Controls orbital insertion & trans-lunar Δv",
+      engSpec: (t, isp, dry) => `Thrust ${t} kN · Isp ${isp}s · Dry ${dry} kg`,
+      strSpec: (dry, dur) => `Dry ${dry} kg · Margin Factor ${dur}`,
+      payHeaderTitle: "PAYLOAD INTEGRATION",
+      payReqTag: (kg) => `Target Req: ≥ ${kg} kg`,
+      lblPayType: "Payload Class & Instruments",
+      lblPayMass: "Payload Mass (kg)",
+      lblPayMassSub: "Heavier payloads require higher Δv & propellant",
+      bpSectionLabel: "ENGINEERING BLUEPRINTS (Saving & Duplicating are 100% FREE · Costs apply only at launch)",
+      bpPlaceholder: "Enter blueprint name (e.g., Falcon-II Lunar)",
+      saveBpBtn: "📐 Save Blueprint ($0)",
+      bpConfig: (cfg, kg) => `Config: ${cfg} · Payload ${kg} kg`,
+      bpSingle: "1-Stage",
+      bpLoad: "Load",
+      bpDup: "Duplicate ($0)",
+      bpDel: "Delete",
+      campPanelTitle: "02A / Main Campaign Progression",
+      campUnlockTag: "Sequential Unlock · Complete prior to unlock next",
+      campPanelDesc: "Complete campaign milestones to earn government grants, science points, and reputation, unlocking lunar and deep-space missions.",
+      tagCompleted: "Completed",
+      tagUnlocked: "Unlocked",
+      tagLocked: "🔒 Complete Prior Mission",
+      reqLine: (kg, dv, twr) => `Req: Payload ≥<b>${kg}kg</b> · Δv ≥<b>${dv}km/s</b> · TWR ≥<b>${twr}</b>`,
+      rewLine: (f, s, r) => `Reward: <b>${f}</b> · +${s}🔬 · +${r}⭐`,
+      btnSelectedTarget: "✔ Selected Launch Target",
+      btnSelectTarget: "Set as Launch Target",
+      contPanelTitle: "02B / Commercial & Government Contracts",
+      contAdvanceTag: "25% Upfront Advance",
+      contPanelDesc: "Terms: Signing grants an immediate <b>25% upfront advance</b>; successful delivery pays the remaining <b>75% balance</b> (20% auto-deducted if Bailout Debt exists); failure requires refunding <b>50% of the advance</b> (12.5% of total contract value). Max 1 active contract.",
+      noActiveContract: "No active commercial contract. Launches will target your selected Campaign Mission.",
+      activeContractTitle: (t) => `📑 Active Commercial Contract: ${t}`,
+      activeContractTag: "Active · Priority Target",
+      activeContractLine: (adv, rem, ref) => `Advance Paid (25%): <b>${adv}</b> · Delivery Balance (75%): <b style="color:var(--green)">${rem}</b> · Failure Clawback (50% Adv): <b style="color:var(--red)">-${ref}</b>`,
+      cancelContractBtn: (ref) => `Cancel Contract (Refund 50% Advance -${ref})`,
+      totalPayoutTag: (amt) => `Total ${amt}`,
+      contractTermsLine: (adv, tail) => `Upfront (25%): <b style="color:var(--cyan)">+${adv}</b> · Delivery (75%): <b>${tail}</b>`,
+      btnHasContract: "Contract Already Active",
+      btnAcceptContract: (adv) => `Sign Contract (+${adv} Upfront Advance)`,
+      rndPanelTitle: "03A / Aerospace Research & Development",
+      rndFrozenTag: "🔒 R&D Paused During Financial Crisis/Restructuring",
+      rndReadyTag: (s) => `Available Science: ${s} 🔬`,
+      rndPanelDesc: "Spend Science Points (🔬) to unlock advanced cryogenic/ion engines, carbon-nano composites, booster recovery upgrades, and passive patent licensing income.",
+      tagResearched: "Researched",
+      tagCostSci: (s) => `Requires ${s} 🔬`,
+      btnRndFrozen: "Paused During Crisis",
+      btnRndNeedSci: "Insufficient Science",
+      btnRndUnlock: (s) => `Research (${s} 🔬)`,
+      facPanelTitle: "03B / Space Center Facilities & Maintenance",
+      facPanelTag: "Upgrades boost limits · Increases monthly OpEx",
+      padTitle: (lv) => `🏗️ Launchpad Complex (Lv.${lv}/3)`,
+      padMeta: (tons, rel, maint) => `Max Lift-off Mass: <b>${tons}t</b> · Reliability Bonus: +${rel}% · Upkeep: ${maint}/mo`,
+      labTitle: (lv) => `📡 Mission Control & Research Lab (Lv.${lv}/3)`,
+      labMeta: (sciPct, maint) => `Mission Science Bonus: <b>+${sciPct}%</b> · Upkeep: ${maint}/mo`,
+      btnFacFrozen: "🔒 Frozen in Restructuring",
+      btnUpgradePad: (lv, cost) => `Upgrade Launchpad to Lv.${lv} (${cost})`,
+      btnUpgradeLab: (lv, cost) => `Upgrade Research Lab to Lv.${lv} (${cost})`,
+      tagMaxLv: "Max Level",
+      finPanelTitle: "04A / Financial Survival & Crisis Management",
+      finCard1Name: "AVAILABLE FUNDS / OVERDRAFT",
+      finCard1Sub: "Max Credit Line: -$100,000",
+      finCard2Name: "REMAINING BAILOUT DEBT",
+      finCard2Sub: "20% auto-repaid from contracts",
+      finCard3Name: "MONTHLY OPERATING OPEX",
+      finCard3Sub: "Base crew + Facility upkeep",
+      finCard4Name: "MONTHLY PATENT INCOME",
+      finCard4Sub: "R&D technology licensing",
+      finExplainHealthy: "✅ Financial operations healthy. If funds drop below $25,000, a one-time $80,000 Emergency Bailout becomes available.",
+      finExplainCrisis: "⚠️ Stage 1 Financial Crisis: Funds below $0, utilizing up to $100,000 credit line. Non-essential R&D is paused, but repairs, contracts, and launches remain available.",
+      finExplainRestructure: (streak) => `🚨 Stage 2 Restructuring (Unrecovered Months: ${streak}/3): High-cost facilities & R&D frozen. Complete active missions, liquidate spare parts, downgrade facilities, or execute one-time debt restructuring!`,
+      finActionsLabel: "EMERGENCY BAILOUT & RESTRUCTURING ACTIONS",
+      aidCardTitle: "🆘 National Aerospace Emergency Bailout",
+      aidCardMeta: "Eligibility: Funds below $25,000 or in debt · No unresolved severe restructuring · Limit 1 per campaign",
+      aidCardDesc: "Receive an immediate <b>+$80,000</b> cash injection; creates <b>$96,000</b> Bailout Debt (includes $16,000 premium), automatically deducting <b>20%</b> from all future contract payouts until repaid.",
+      aidAvailTag: "Available (1/1)",
+      aidUsedTag: "Used This Campaign (0/1)",
+      btnAidUsed: "Emergency Bailout Already Claimed",
+      btnAidAbove: "Funds Above $25,000 Threshold",
+      btnAidClaim: "🆘 Claim Emergency Bailout (+$80,000)",
+      restCardTitle: "⚖️ Financial Restructuring & Asset Liquidation",
+      restCardMeta: "Stage 2 Restructuring options: Liquidate spare parts, downgrade facilities to cut OpEx, or execute a one-time debt restructuring",
+      restActiveTag: "Active · Available",
+      restInactiveTag: "Requires Stage 2 Restructuring",
+      sellAssetsBtn: "📦 Liquidate Spare Parts (+$18,000 / -3 Rep)",
+      downgradePadBtn: "🏗️ Downgrade Facility (+$15,000 / Lower OpEx)",
+      oneTimeRestructureBtn: "📑 One-Time Debt Restructuring (Cut 40% Overdraft · 1x)",
+      ledgerPanelTitle: "04B / Agency Financial & Debt Ledger",
+      ledgerCount: (n) => `${n} Entries`,
+      thCycle: "Cycle",
+      thDesc: "Description / Account",
+      thDelta: "Amount",
+      thBal: "Balance",
+      thDebt: "Bailout Debt",
+      logsPanelTitle: "05 / Flight Archives & Failure Investigation",
+      successRate: (pct, w, t) => `Success Rate: ${pct}% (${w}/${t})`,
+      noLogsYet: "No Flight Records Yet",
+      logsPanelDesc: "Complete telemetry archive of every launch, rocket configuration, net financial P&L, and black-box science data recovered from anomalies.",
+      thLogCycle: "Cycle",
+      thLogMission: "Mission / Vehicle",
+      thLogTelem: "Telemetry",
+      thLogOutcome: "Outcome & Severity",
+      thLogPnl: "Net P&L",
+      thLogSci: "Sci / Rep",
+      emptyLogsRow: "No launches recorded yet. Configure your rocket in 01 Vehicle Workshop and initiate your first launch!",
+      sideTelemTitle: "Live Engineering Telemetry",
+      targetTagPrefix: (t) => `Target: ${t}`,
+      statMassName: "LIFT-OFF MASS",
+      statTwrName: "LIFTOFF TWR",
+      statDvName: "TOTAL DELTA-V",
+      statMarginName: "DESIGN MARGIN",
+      costBreakLabel: "LAUNCH COST BREAKDOWN (HARDWARE + OPEX + OPTIONS)",
+      lblBuildCost: "Hardware & Propellant",
+      lblOpsCost: "Range Ops / Recovery / Insurance",
+      lblTotalCost: "Total Launch Expenditure",
+      checklistLabel: "PRE-LAUNCH MANDATORY CHECKLIST",
+      lblRelScore: "Engineering Reliability Score",
+      statusReady: "✅ ENGINEERING REVIEW PASSED: All mandatory pre-launch checks satisfied. Launch window open!",
+      statusNotReady: (n) => `⛔ LAUNCH LOCKED: ${n} mandatory pre-launch check(s) failed. Adjust vehicle design or budget.`,
+      launchBtn: "🚀 INITIATE LAUNCH",
+      resetDesignBtn: "Reset",
+      flightOpsTitle: "FLIGHT OPERATIONS",
+      phaseStandby: "STANDBY",
+      phaseAscent: "ASCENT",
+      phaseSuccess: "SUCCESS",
+      phaseAnomaly: "ANOMALY",
+      repStandbyTitle: "Telemetry Report Pending",
+      repStandbyDesc: "Complete vehicle integration and pass all pre-launch checks, then click Initiate Launch to begin flight operations.",
+      footerText: "APOGEE: Lunar Mission · Aerospace Engineering & Financial Survival Simulator · Auto-saved to localStorage",
+      chkPayload: (kg) => `Payload Mass ≥ ${kg} kg`,
+      chkDv: (dv) => `Total Delta-V ≥ ${dv} km/s`,
+      chkTwr: (twr) => `Liftoff TWR ≥ ${twr}`,
+      chkPad: (tons, lv) => `Launchpad Limit ≤ ${tons}t (Lv.${lv})`,
+      chkTech: "All Components Researched",
+      chkTechOk: "All Ready",
+      chkTechLock: "Locked Part",
+      chkBudget: (cost) => `Funds / Credit Available (${cost})`,
+      chkBudgetOk: "Approved",
+      chkBudgetNo: "Exceeds Credit",
+      needTechSuffix: " [🔒R&D]",
+      // Dynamic Toast & Report Messages
+      toastSaved: "✅ Campaign progress, ledger & blueprints saved to localStorage!",
+      toastSaveErr: "⚠️ Failed to save to localStorage. Check browser privacy settings.",
+      toastRestructWarn: "⚠️ Warning: Entered Stage 2 Financial Restructuring! High-cost upgrades & R&D frozen.",
+      toastMonthAdv: (m, net) => `📅 Advanced to Month ${m}. Monthly OpEx settled (${net}).`,
+      toastAidClaimed: "🆘 Received +$80,000 Emergency Bailout! 20% of future contracts will auto-repay the $96,000 debt.",
+      toastCheckFail: "❌ Pre-launch checklist failed! Resolve red items before launching.",
+      toastBpSaved: (name) => `📐 Blueprint "${name}" saved for FREE ($0)!`,
+      toastBpLoaded: (name) => `📐 Loaded blueprint "${name}" ($0)`,
+      toastBpDup: (name) => `📋 Duplicated blueprint "${name}" ($0)`,
+      toastSoldAssets: "📦 Liquidated spare parts for +$18,000 (-3 Rep)",
+      toastDowngraded: "🏗️ Facility downgraded for +$15,000; monthly OpEx reduced.",
+      toastRestructDone: (cut) => `📑 One-time debt restructuring complete! Forgave ${cut} of overdraft debt.`,
+      toastResetDesign: "↺ Rocket workshop parameters reset.",
+      toastNewCampaign: "🔄 Started a brand new aerospace agency campaign!",
+      toastTargetSet: (t) => `🎯 Mission target set: ${t}`,
+      toastContractSigned: (t, adv) => `🤝 Signed "${t}"! Received 25% advance (+${adv}).`,
+      toastContractCanceled: (ref) => `📑 Contract canceled. Refunded 50% of advance (-${ref}).`,
+      toastTechUnlocked: (t) => `🔬 R&D Breakthrough! Unlocked "${t}"`,
+      toastFacUpgraded: "🏗️ Space center facility upgraded!",
+      bankruptTitle: "🚨 AGENCY BANKRUPTCY REPORT",
+      bankruptReason3Mo: "Entered Financial Restructuring after exhausting Emergency Bailout, failing to restore positive cashflow for 3 consecutive months.",
+      bankruptReasonNoRec: "Reached the -$100,000 credit ceiling with Emergency Bailout and Restructuring exhausted, unable to cover essential operating expenses.",
+      bankruptSummary: (m, f, d, tf, ff, cm, tm) => `
+        <p><b>Agency Cycle:</b> Month ${m}</p>
+        <p><b>Final Balance:</b> <span style="color:var(--red)">${f}</span> · <b>Unpaid Bailout Debt:</b> ${d}</p>
+        <p><b>Flight & Incident Record:</b> ${tf} Total Launches, ${ff} Anomalies</p>
+        <p><b>Campaign Milestones Completed:</b> ${cm} / ${tm}</p>
+      `,
+      btnRestartCampaign: "🔄 Start New Campaign",
+      btnViewArchives: "Inspect Ledger & Logs",
+      resetModalTitle: "Reset Entire Campaign Save?",
+      resetModalDesc: "This will erase your current funds, science, mission progress, blueprints, and flight ledger, restoring the initial $120,000 agency state.",
+      btnConfirmReset: "Confirm Reset",
+      btnCancel: "Cancel",
+      // Flight Report Strings
+      repLaunchTitle: (t) => `Telemetry Sequence Active · ${t}`,
+      repLaunchP1: (eng, twr) => `T+00s · Stage 1 "${eng}" full thrust ignition. Liftoff TWR ${twr}.`,
+      repLaunchP2: "T+45s · Passing Max-Q aerodynamic pressure. Structural telemetry nominal.",
+      outcomeSuccessLabel: "✅ Mission Success",
+      repSuccessTitle: (t) => `✅ MISSION SUCCESS — ${t}`,
+      repSuccessP1: (kg, pay) => `Vehicle achieved nominal orbit and deployed <b>${kg} kg</b> "${pay}".`,
+      repSuccessP2: (gross, repaid, actual, rec) => `<b>Financial Settlement:</b> Earned <b>${gross}</b>${repaid ? ` (Auto-repaid 20% Bailout Debt <b>-${repaid}</b>, Net Cash <b>${actual}</b>)` : ""}${rec ? ` · Booster Recovery Refund <b>+${rec}</b>` : ""}.`,
+      repSuccessP3: (sci, rep) => `<b>Science & Reputation:</b> +${sci} 🔬 Science · +${rep} ⭐ Reputation.`,
+      tier1Name: "Tier 1 · Minor Glitch (10–20% Loss)",
+      tier1Cause: "Upper stage attitude thruster lag caused orbital inclination drift; primary booster hardware partially recovered for refurbishment.",
+      tier2Name: "Tier 2 · Mission Failure (50–80% Loss)",
+      tier2Cause: "Turbopump mixture ratio imbalance triggered premature engine cutoff; payload lost during atmospheric reentry.",
+      tier3Name: "Tier 3 · Catastrophic Anomaly (100% + Pad Repair)",
+      tier3Cause: "Interstage separation ordnance ruptured main propellant tank; launchpad flame trench damaged (excluded from standard insurance).",
+      repFailTitle: (tier) => `❌ ${tier}`,
+      repFailP1: (cause) => `<b>Root Cause Analysis:</b> ${cause}`,
+      repFailP2: (loss, ins, advRef) => `<b>Financial Loss Breakdown:</b> Repair & damage loss <b>-${loss}</b>${ins ? ` · Insurance Payout <b>+${ins}</b>` : ""}${advRef ? ` · Contract 50% Advance Refund <b>-${advRef}</b>` : ""}.`,
+      repFailP3: (sci, rep) => `<b>Accident Investigation Yield:</b> Recovered black-box telemetry for <b>+${sci} 🔬</b> Science · Reputation <b>${rep} ⭐</b>.`,
+      // Ledger descriptions
+      ledInit: "Initial National Aerospace Agency Grant",
+      ledPassive: (m) => `Month ${m} · Patent Licensing Passive Income`,
+      ledOpex: (m) => `Month ${m} · Agency Crew & Facility Operating OpEx`,
+      ledAid: "🆘 Claimed National Emergency Bailout (+$80k cash / $96k debt)",
+      ledLaunch: (t) => `Vehicle Integration & Launch Cost (${t})`,
+      ledContractTail: (t) => `Commercial Contract Delivery Balance (75%): ${t}`,
+      ledCampaignRew: (t) => `Campaign Mission Grant: ${t}`,
+      ledAutoRepay: (amt) => ` (Auto-repaid 20% Bailout Debt -${amt})`,
+      ledRecovery: (pct) => `Stage 1 Booster Recovery & Refurbishment (+${pct}% hardware)`,
+      ledFailLoss: (tier) => `${tier} · Repair & Payload Loss`,
+      ledInsurance: "Launch Insurance Claim Payout (50% of anomaly loss)",
+      ledContractClawback: (t) => `Contract Failure: Refunded 50% Advance (${t})`,
+      ledSellAssets: "Restructuring: Liquidated Spare Hardware Assets",
+      ledDowngradePad: "Restructuring: Downgraded Launchpad to Cut OpEx",
+      ledDowngradeLab: "Restructuring: Downsized Research Lab to Cut OpEx",
+      ledDebtRestruct: "Restructuring: One-Time Creditor Debt Forgiveness (40% Overdraft)",
+      ledContractSign: (t) => `Signed Commercial Contract Advance (25%): ${t}`,
+      ledContractCancel: (t) => `Canceled Commercial Contract: Refunded 50% Advance (${t})`,
+      ledUpgradePad: (lv) => `Upgraded Launchpad Complex to Lv.${lv}`,
+      ledUpgradeLab: (lv) => `Upgraded Mission Control & Lab to Lv.${lv}`
+    },
+    zh: {
+      pageTitle: "APOGEE: Lunar Mission — 航天工程與財務生存模擬",
+      hdrSubtitle: "月球任務與航天局經營模擬器",
+      langBtn: "🌐 繁中 / EN",
+      campaignPill: (done, total) => `戰役進度 · ${done}/${total} 完成`,
+      advanceMonthBtn: "⏭ 推進至下月結算",
+      manualSaveBtn: "💾 保存進度",
+      resetCampaignBtn: "↺ 重置戰役",
+      lblFundsTitle: "可用資金 FUNDS",
+      creditAvail: (amt) => `可用信用額度: ${amt}`,
+      lblDebtTitle: "援助債務 / 負債",
+      aidUsed: "援助已用",
+      aidReady: "援助可用",
+      autoRepayOn: "合約結算自動扣款 20%",
+      autoRepayOff: "目前無緊急援助債務",
+      lblSciTitle: "科研點數 SCIENCE",
+      patentSub: (amt) => `專利授權收入: +${amt}/月`,
+      lblRepTitle: "航天局聲望 REP",
+      lblRepTag: "⭐ 聲望",
+      upkeepSub: (amt) => `月度固定營運: -${amt}`,
+      lblCycleTitle: "當前營運週期",
+      lblCycleTag: "📅 歷時",
+      monthLabel: (m) => `第 ${m} 月`,
+      targetSub: (t) => `目標: ${t}`,
+      stageHealthy: "財務穩健",
+      stageWarn: "資金警戒線",
+      stageCrisis: "第一階段：財務危機",
+      stageRestructure: "第二階段：財務重組",
+      finBadgeOk: "正常",
+      finBadgeWarn: "警戒",
+      finBadgeCrisis: "危機",
+      finBadgeRest: "重組中",
+      alertWarn: (bal) => `⚠️ 財務警戒線提示：可用資金低於 $25,000 (${bal})，請注意控制發射與營運成本！`,
+      alertCrisis: (bal) => `⚠️ 第一階段：財務危機！目前處於信用透支狀態 (${bal})，非必要科研已暫停，仍可執行任務與維修。`,
+      alertRestructure: "🚨 第二階段：財務重組已觸發！高成本設施擴建與非必要科研已凍結，請透過完成已接任務、變賣資產或債務重組恢復現金流。",
+      bannerAidBtn: "🆘 申請緊急資金援助 (+$80,000)",
+      bannerFinanceTabBtn: "查看財務中心 →",
+      heroEyebrow: "MISSION ENGINEERING & AGENCY OPERATIONS / APOGEE",
+      heroTitle: "超越地平線 · 從近地軌道邁向深空",
+      heroDesc: "設計多級運載火箭、管理免費工程藍圖、承接政府與商業發射合約、推動科研樹突破，並在嚴苛的財務生存法則下帶領航天局登月。",
+      tabWorkshop: "🚀 01 火箭工坊與藍圖",
+      tabMissions: "🛰️ 02 戰役任務與合約",
+      tabRnd: "🔬 03 科研樹與發射場",
+      tabFinance: "💰 04 財務生存與帳本",
+      tabLogs: "📋 05 飛行檔案與故障分析",
+      wsPanelTitle: "01 / 多級火箭工程工坊 (Vehicle Workshop)",
+      stageMode2: "雙級構型 · 2-Stage",
+      stageMode1: "單級構型 · 1-Stage",
+      lblUseStage2: "啟用第二級上面級 (Stage 2 大幅提升入軌 Δv)",
+      lblEquipRec: "裝配可回收助推組件 (+$4,500 · 成功回收返還35%一級硬體)",
+      lblBuyIns: "購買任務發射保險 (+12%發射費 · 賠付50%普通/任務失敗損失)",
+      s1HeaderTitle: "第一級助推器 · STAGE 1 BOOSTER",
+      s2HeaderTitle: "第二級上面級 · STAGE 2 UPPER STAGE",
+      hardwareTag: (amt) => `硬體造價: ${amt}`,
+      lblS1Eng: "一級主發動機",
+      lblS1Str: "一級箭體結構",
+      lblS1Fuel: "一級推進劑加注量",
+      lblS1FuelSub: "決定起飛推重比與一級燃燒時間",
+      lblS2Eng: "二級上面級發動機",
+      lblS2Str: "二級箭體結構",
+      lblS2Fuel: "二級推進劑加注量",
+      lblS2FuelSub: "決定入軌與地月轉移 Δv",
+      engSpec: (t, isp, dry) => `推力 ${t} kN · 比衝 ${isp}s · 乾重 ${dry} kg`,
+      strSpec: (dry, dur) => `乾重 ${dry} kg · 結構裕度係數 ${dur}`,
+      payHeaderTitle: "有效載荷艙 · PAYLOAD INTEGRATION",
+      payReqTag: (kg) => `當前任務要求: ≥ ${kg} kg`,
+      lblPayType: "載荷類型與儀器包",
+      lblPayMass: "有效載荷質量 (kg)",
+      lblPayMassSub: "載荷越重，所需推進劑與總 Δv 越高",
+      bpSectionLabel: "工程藍圖庫 · BLUEPRINTS (保存與複製完全免費 · 僅製造與發射扣費)",
+      bpPlaceholder: "輸入藍圖名稱 (如: 獵隼-II 月球型)",
+      saveBpBtn: "📐 保存當前藍圖 (免費)",
+      bpConfig: (cfg, kg) => `配置: ${cfg} · 載荷 ${kg} kg`,
+      bpSingle: "單級",
+      bpLoad: "載入裝配",
+      bpDup: "複製 ($0)",
+      bpDel: "刪除",
+      campPanelTitle: "02A / 主線戰役任務序列 (Campaign Progression)",
+      campUnlockTag: "順序解鎖 · 完成前置解鎖下一階段",
+      campPanelDesc: "完成主線任務可獲得豐厚科研點數、聲望及政府專項撥款，並解鎖通往月球與深空的後續任務。",
+      tagCompleted: "已完成",
+      tagUnlocked: "已解鎖",
+      tagLocked: "🔒 需先完成前置任務",
+      reqLine: (kg, dv, twr) => `要求: 載荷 ≥<b>${kg}kg</b> · Δv ≥<b>${dv}km/s</b> · TWR ≥<b>${twr}</b>`,
+      rewLine: (f, s, r) => `獎勵: <b>${f}</b> · +${s}🔬 · +${r}⭐`,
+      btnSelectedTarget: "✔ 當前已設為發射目標",
+      btnSelectTarget: "設為當前發射目標",
+      contPanelTitle: "02B / 商業與政府發射合約 (Contracts)",
+      contAdvanceTag: "簽約即付 25% 預付款",
+      contPanelDesc: "規則：簽署合約立即獲得 <b>25% 簽約預付款</b>；任務成功交付獲得剩餘 <b>75% 尾款</b>（若存在緊急援助債務將自動扣除 20% 償還）；若任務失敗需<b>退還預付款的 50%</b>（即合約總額的 12.5%）。同時最多承接 1 份商業合約。",
+      noActiveContract: "當前未簽署商業發射合約，發射將預設執行選中的「主線戰役任務」。",
+      activeContractTitle: (t) => `📑 當前執行中商業合約：${t}`,
+      activeContractTag: "進行中 · 優先發射目標",
+      activeContractLine: (adv, rem, ref) => `已領預付款 (25%): <b>${adv}</b> · 交付尾款 (75%): <b style="color:var(--green)">${rem}</b> · 失敗需退還預付款50%: <b style="color:var(--red)">-${ref}</b>`,
+      cancelContractBtn: (ref) => `終止合約 (退還50%預付款 -${ref})`,
+      totalPayoutTag: (amt) => `總額 ${amt}`,
+      contractTermsLine: (adv, tail) => `簽約預付: <b style="color:var(--cyan)">+${adv}</b> · 交付尾款: <b>${tail}</b>`,
+      btnHasContract: "已有進行中合約",
+      btnAcceptContract: (adv) => `簽署合約 (立即獲得 +${adv} 預付款)`,
+      rndPanelTitle: "03A / 航天科研樹 (Research & Development)",
+      rndFrozenTag: "🔒 財務危機/重組期間暫停新科研投入",
+      rndReadyTag: (s) => `可用科研點: ${s} 🔬`,
+      rndPanelDesc: "消耗科學點數 (🔬) 解鎖先進發動機、輕量化複合材料、助推器回收及專利技術授權收入。",
+      tagResearched: "已解鎖",
+      tagCostSci: (s) => `需要 ${s} 🔬`,
+      btnRndFrozen: "財務危機期間暫停研發",
+      btnRndNeedSci: "科研點數不足",
+      btnRndUnlock: (s) => `投入 ${s} 🔬 解鎖技術`,
+      facPanelTitle: "03B / 航天中心設施升級與維護 (Facilities)",
+      facPanelTag: "升級提升上限 · 增加月度維護費",
+      padTitle: (lv) => `🏗️ 航天發射台複合體 (Lv.${lv}/3)`,
+      padMeta: (tons, rel, maint) => `最大起飛承載: <b>${tons} 噸</b> · 固有可靠性加成: +${rel}% · 月維護費: ${maint}/月`,
+      labTitle: (lv) => `📡 深空測控與科研實驗室 (Lv.${lv}/3)`,
+      labMeta: (sciPct, maint) => `任務科研數據產出加成: <b>+${sciPct}%</b> · 月維護費: ${maint}/月`,
+      btnFacFrozen: "🔒 財務重組期間禁止高成本基建",
+      btnUpgradePad: (lv, cost) => `擴建發射台至 Lv.${lv} (${cost})`,
+      btnUpgradeLab: (lv, cost) => `升級測控實驗室至 Lv.${lv} (${cost})`,
+      tagMaxLv: "已達最高等級",
+      finPanelTitle: "04A / 財務生存狀態與危機管理",
+      finCard1Name: "當前可用資金 / 信用透支",
+      finCard1Sub: "信用透支上限: -$100,000",
+      finCard2Name: "緊急援助剩餘待還債務",
+      finCard2Sub: "合約收入自動償還 20%",
+      finCard3Name: "每月固定營運費用",
+      finCard3Sub: "基礎團隊 + 設施維護",
+      finCard4Name: "每月被動授權收入",
+      finCard4Sub: "科研技術專利授權",
+      finExplainHealthy: "✅ 財務營運健康。若可用資金低於 $25,000，可啟動一次性國家緊急資金援助 ($80,000)。",
+      finExplainCrisis: "⚠️ 第一階段：財務危機！資金已低於 $0，正在使用最高 $100,000 信用額度。非必要科研投入已暫停，您仍可維修、接取合約與發射任務。",
+      finExplainRestructure: (streak) => `🚨 第二階段：財務重組（連續未償月數: ${streak}/3）：高成本設施與非必要科研已凍結。您仍可執行已接受的任務、出售備件、降級設施或執行一次性債務重組！`,
+      finActionsLabel: "緊急援助與財務重組操作",
+      aidCardTitle: "🆘 國家航天緊急資金援助 (Emergency Bailout)",
+      aidCardMeta: "條件：資金低於 $25,000 或處於負債狀態 · 無未處理嚴重重組 · 每戰役限用 1 次",
+      aidCardDesc: "立即獲得 <b>+$80,000</b> 現金注資；生成 <b>$96,000</b> 援助債務（含 $16,000 溢價），後續所有合約結算自動扣款 <b>20%</b> 直至還清。",
+      aidAvailTag: "可用 (1/1)",
+      aidUsedTag: "本戰役已使用 (0/1)",
+      btnAidUsed: "本戰役緊急援助已領取",
+      btnAidAbove: "資金高於 $25,000 警戒線（暫無需援助）",
+      btnAidClaim: "🆘 立即領取緊急資金援助 (+$80,000)",
+      restCardTitle: "⚖️ 財務重組與資產變現 (Restructuring)",
+      restCardMeta: "第二階段財務重組專屬通道：出售閒置硬體資產、降級設施降低月費或執行一次性債務重組",
+      restActiveTag: "已啟動 · 可操作",
+      restInactiveTag: "需處於第二階段財務重組",
+      sellAssetsBtn: "📦 變賣庫存備件 (+$18,000 / -3 聲望)",
+      downgradePadBtn: "🏗️ 降級發射場設施 (+$15,000 / 降低月費)",
+      oneTimeRestructureBtn: "📑 執行一次性債務重組 (削減40%負債 · 限1次)",
+      ledgerPanelTitle: "04B / 航天局財務收支與債務明細帳本",
+      ledgerCount: (n) => `${n} 筆記錄`,
+      thCycle: "週期",
+      thDesc: "科目 / 事件說明",
+      thDelta: "收支變動",
+      thBal: "帳戶餘額",
+      thDebt: "援助債務",
+      logsPanelTitle: "05 / 歷史發射檔案與事故調查報告",
+      successRate: (pct, w, t) => `歷史成功率: ${pct}% (${w}/${t})`,
+      noLogsYet: "暫無飛行記錄",
+      logsPanelDesc: "記錄每一次發射的火箭配置、遙測數據、盈虧結果以及黑盒子事故調查帶來的科研數據回收。",
+      thLogCycle: "週期",
+      thLogMission: "任務 / 火箭",
+      thLogTelem: "遙測 (Δv / TWR)",
+      thLogOutcome: "結果與事故等級",
+      thLogPnl: "淨盈虧",
+      thLogSci: "科研/聲望",
+      emptyLogsRow: "尚無發射記錄。前往「01 火箭工坊」完成配置並執行首次發射吧！",
+      sideTelemTitle: "即時工程遙測與發射審查",
+      targetTagPrefix: (t) => `目標: ${t}`,
+      statMassName: "起飛總質量 MASS",
+      statTwrName: "起飛推重比 TWR",
+      statDvName: "總速度增量 DELTA-V",
+      statMarginName: "結構設計裕度",
+      costBreakLabel: "發射成本核算 (製造 + 營運 + 選裝件)",
+      lblBuildCost: "硬體製造與推進劑",
+      lblOpsCost: "發射場營運 / 回收 / 保險",
+      lblTotalCost: "本次發射總支出",
+      checklistLabel: "發射前逐項強制檢查 (PRE-LAUNCH CHECKLIST)",
+      lblRelScore: "綜合工程可靠性評估",
+      statusReady: "✅ 工程總裝審查通過：所有發射前強制檢查均已滿足，發射窗口已開啟！",
+      statusNotReady: (n) => `⛔ 禁止發射：尚有 ${n} 項強制檢查未通過（請調整火箭配置或預算）。`,
+      launchBtn: "🚀 執行點火發射 (LAUNCH)",
+      resetDesignBtn: "重置參數",
+      flightOpsTitle: "飛行測控中心 · FLIGHT OPS",
+      phaseStandby: "待命 STANDBY",
+      phaseAscent: "點火升空 ASCENT",
+      phaseSuccess: "任務成功 SUCCESS",
+      phaseAnomaly: "飛行異常 ANOMALY",
+      repStandbyTitle: "遙測報告待命中",
+      repStandbyDesc: "透過左側工坊完成火箭總裝並滿足發射前檢查後，點擊「執行點火發射」開啟任務測控。",
+      footerText: "APOGEE: Lunar Mission · 航天工程與財務生存模擬 · 所有進度自動保存至本地瀏覽器 (localStorage)",
+      chkPayload: (kg) => `有效載荷 ≥ ${kg} kg`,
+      chkDv: (dv) => `總速度增量 Δv ≥ ${dv} km/s`,
+      chkTwr: (twr) => `一級起飛推重比 TWR ≥ ${twr}`,
+      chkPad: (tons, lv) => `發射台最大承載 ≤ ${tons} 噸 (Lv.${lv})`,
+      chkTech: "部件科研技術已解鎖",
+      chkTechOk: "全部就緒",
+      chkTechLock: "含未解鎖部件",
+      chkBudget: (cost) => `資金/信用額度充足 (需 ${cost})`,
+      chkBudgetOk: "預算通過",
+      chkBudgetNo: "超出信用上限",
+      needTechSuffix: " [🔒需科研]",
+      toastSaved: "✅ 戰役進度、財務帳本與藍圖已保存至本地瀏覽器！",
+      toastSaveErr: "⚠️ 本地存儲保存失敗，請檢查瀏覽器隱私設置。",
+      toastRestructWarn: "⚠️ 警告：已進入「第二階段：財務重組」！非必要科研與高成本基建已凍結。",
+      toastMonthAdv: (m, net) => `📅 已推進至第 ${m} 月，完成月度營運結算 (${net})`,
+      toastAidClaimed: "🆘 已到帳 +$80,000 緊急援助！後續合約收入將自動扣除 20% 償還 $96,000 債務。",
+      toastCheckFail: "❌ 發射前強制檢查未通過！請先解決紅字檢查項。",
+      toastBpSaved: (name) => `📐 藍圖「${name}」已免費保存 ($0)！`,
+      toastBpLoaded: (name) => `📐 已免費載入藍圖「${name}」($0)`,
+      toastBpDup: (name) => `📋 已免費複製藍圖「${name}」($0)`,
+      toastSoldAssets: "📦 已變賣庫存備件獲得 +$18,000（聲望 -3）",
+      toastDowngraded: "🏗️ 已降級設施獲得 +$15,000，每月維護成本已降低",
+      toastRestructDone: (cut) => `📑 一次性債務重組完成，已豁免 ${cut} 負債！`,
+      toastResetDesign: "↺ 已重置當前火箭工程參數",
+      toastNewCampaign: "🔄 已開啟全新航天局戰役！",
+      toastTargetSet: (t) => `🎯 已鎖定戰役任務：${t}`,
+      toastContractSigned: (t, adv) => `🤝 已簽署「${t}」，收到 25% 簽約預付款 +${adv}！`,
+      toastContractCanceled: (ref) => `📑 已終止合約，並按約退還 50% 預付款 (-${ref})`,
+      toastTechUnlocked: (t) => `🔬 科研突破！已解鎖「${t}」`,
+      toastFacUpgraded: "🏗️ 航天設施擴建完成！",
+      bankruptTitle: "🚨 航天局破產清算報告 (BANKRUPTCY)",
+      bankruptReason3Mo: "已進入財務重組且耗盡緊急援助，連續 3 個結算月未能恢復正向現金流。",
+      bankruptReasonNoRec: "信用額度已達 $100,000 上限，緊急援助與重組方案均已耗盡，無法支付必要營運費用。",
+      bankruptSummary: (m, f, d, tf, ff, cm, tm) => `
+        <p><b>營運週期：</b>第 ${m} 月</p>
+        <p><b>最終帳戶餘額：</b><span style="color:var(--red)">${f}</span> · <b>未償援助債務：</b>${d}</p>
+        <p><b>飛行與事故統計：</b>累計發射 ${tf} 次，發生飛行異常/事故 ${ff} 次</p>
+        <p><b>已完成主線任務：</b>${cm} / ${tm}</p>
+      `,
+      btnRestartCampaign: "🔄 重新開始新戰役",
+      btnViewArchives: "查看帳本與事故檔案",
+      resetModalTitle: "確認重置整個戰役存檔？",
+      resetModalDesc: "這將清空當前的資金、科研、任務進度、藍圖與飛行帳本，並恢復初始 $120,000 建局狀態。",
+      btnConfirmReset: "確認重置戰役",
+      btnCancel: "取消",
+      repLaunchTitle: (t) => `遙測序列已啟動 · ${t}`,
+      repLaunchP1: (eng, twr) => `T+00s · 一級發動機「${eng}」全推力點火，起飛推重比 ${twr}。`,
+      repLaunchP2: "T+45s · 穿過最大動壓區 (Max-Q)，結構遙測正常。",
+      outcomeSuccessLabel: "✅ 任務圓滿成功",
+      repSuccessTitle: (t) => `✅ 任務成功 — ${t}`,
+      repSuccessP1: (kg, pay) => `火箭精準入軌並釋放 <b>${kg} kg</b>「${pay}」，遙測數據完全達標。`,
+      repSuccessP2: (gross, repaid, actual, rec) => `<b>財務結算：</b>獲得任務撥款 <b>${gross}</b>${repaid ? `（自動扣除 20% 償還援助債務 <b>-${repaid}</b>，實收 <b>${actual}</b>）` : ""}${rec ? ` · 助推器回收返還 <b>+${rec}</b>` : ""}。`,
+      repSuccessP3: (sci, rep) => `<b>科研與聲望：</b>+${sci} 🔬 科研點數 · +${rep} ⭐ 聲望。`,
+      tier1Name: "一級 · 輕微故障 (10–20% 損失)",
+      tier1Cause: "二級姿態控制推力器響應延遲，衛星未能進入預定傾角軌道，箭體大部分組件可檢修復用。",
+      tier2Name: "二級 · 任務失敗 (50–80% 損失)",
+      tier2Cause: "渦輪泵燃料混合比失衡導致提前關機，有效載荷墜入大氣層燒毀。",
+      tier3Name: "三級 · 重大事故 (100% + 發射台維修)",
+      tier3Cause: "級間分離火工品異常引爆主推進劑箱，發射台導流槽受損，任務保險不賠付重大發射台損毀。",
+      repFailTitle: (tier) => `❌ ${tier}`,
+      repFailP1: (cause) => `<b>故障原因分析：</b>${cause}`,
+      repFailP2: (loss, ins, advRef) => `<b>經濟損失核算：</b>追加維修/損毀支出 <b>-${loss}</b>${ins ? ` · 保險賠付 <b>+${ins}</b>` : ""}${advRef ? ` · 退還合約50%預付款 <b>-${advRef}</b>` : ""}。`,
+      repFailP3: (sci, rep) => `<b>事故調查收穫：</b>回收遙測黑盒子獲得 <b>+${sci} 🔬</b> 科研數據 · 聲望變動 <b>${rep} ⭐</b>。`,
+      ledInit: "國家航天局初始建局撥款",
+      ledPassive: (m) => `第 ${m} 月 · 專利技術授權被動收入`,
+      ledOpex: (m) => `第 ${m} 月 · 基地團隊與設施營運維護費`,
+      ledAid: "🆘 領取國家航天緊急資金援助 (+$80k 現金 / $96k 債務)",
+      ledLaunch: (t) => `火箭總裝與發射支出 (${t})`,
+      ledContractTail: (t) => `商業合約交付尾款 (75%): ${t}`,
+      ledCampaignRew: (t) => `戰役任務專項撥款: ${t}`,
+      ledAutoRepay: (amt) => ` (已自動扣除20%償還援助債務 -${amt})`,
+      ledRecovery: (pct) => `一級助推器成功海上回收再利用 (+${pct}%硬體殘值)`,
+      ledFailLoss: (tier) => `${tier} · 善後維修與載荷賠償`,
+      ledInsurance: "任務發射保險理賠 (賠付50%故障損失)",
+      ledContractClawback: (t) => `商業合約違約：退還 50% 簽約預付款 (${t})`,
+      ledSellAssets: "財務重組：變賣庫存航太備件資產",
+      ledDowngradePad: "財務重組：降級發射台設施規模以削減月度維護費",
+      ledDowngradeLab: "財務重組：精簡測控實驗室規模以削減月度維護費",
+      ledDebtRestruct: "財務重組：執行一次性債權人債務重組協議 (豁免40%透支負債)",
+      ledContractSign: (t) => `簽署商業合約預付款 (25%): ${t}`,
+      ledContractCancel: (t) => `主動終止商業合約：退還 50% 預付款 (${t})`,
+      ledUpgradePad: (lv) => `擴建航天發射台複合體至 Lv.${lv}`,
+      ledUpgradeLab: (lv) => `升級深空測控與科研實驗室至 Lv.${lv}`
+    }
+  };
+
+  // =========================================================================
+  // 1. STATIC ENGINEERING, CAMPAIGN, CONTRACT & TECH DEFINITIONS (BILINGUAL)
+  // =========================================================================
+  const ENGINES = {
+    merlin:  { id:"merlin",  name:{en:"Kestrel-L · Kerolox Booster",   zh:"Kestrel-L · 液氧煤油機"},   stage:1, thrust:1850, isp:335, dry:4100, cost:14000, tech:null,          rel:0.94 },
+    solid:   { id:"solid",   name:{en:"Aster-4 · Solid Booster",       zh:"Aster-4 · 固體助推器"},     stage:1, thrust:2450, isp:272, dry:4900, cost:10500, tech:null,          rel:0.90 },
+    vac:     { id:"vac",     name:{en:"Orion-V · Vacuum Optimized",    zh:"Orion-V · 真空優化機"},     stage:2, thrust:980,  isp:372, dry:2100, cost:11500, tech:null,          rel:0.95 },
+    hyperion:{ id:"hyperion",name:{en:"Hyperion-H · Cryo Hydrolox",    zh:"Hyperion-H · 氫氧上面級"},  stage:2, thrust:1150, isp:425, dry:1950, cost:17500, tech:"hydrolox",    rel:0.96 },
+    raptor:  { id:"raptor",  name:{en:"Raptor-X · Full-Flow Staged",   zh:"Raptor-X · 全流量分級機"},  stage:1, thrust:2900, isp:362, dry:3900, cost:22000, tech:"staged_comb", rel:0.97 }
+  };
+
+  const STRUCTURES = {
+    light:    { id:"light",    name:{en:"Light Aluminum Alloy",        zh:"輕質鋁合金 (Light Alloy)"},      s1Mass:1500, s2Mass:750,  durability:0.80, cost:5500,  tech:null },
+    standard: { id:"standard", name:{en:"Reinforced Aerospace Alloy",  zh:"強化航太合金 (Reinforced)"},     s1Mass:2250, s2Mass:1100, durability:0.94, cost:8500,  tech:null },
+    heavy:    { id:"heavy",    name:{en:"Heavy-Duty Composite",        zh:"重型複合材料 (Heavy Composite)"}, s1Mass:3000, s2Mass:1450, durability:1.10, cost:12500, tech:null },
+    carbon:   { id:"carbon",   name:{en:"Carbon-Nanotube Ultralight",  zh:"碳奈米超輕結構 (Carbon-Nano)"},  s1Mass:1650, s2Mass:800,  durability:1.12, cost:16000, tech:"carbon_struct" }
+  };
+
+  const PAYLOADS = {
+    sounding: { id:"sounding", name:{en:"Upper-Atmosphere Sounding Pod", zh:"高層大氣探空儀"},     massMin:50,  sciBonus:8,  cost:2000,  desc:{en:"Suborbital microgravity & atmospheric telemetry package", zh:"基礎亞軌道微重力與大氣採樣包"} },
+    comsat:   { id:"comsat",   name:{en:"Commercial Telecom / EO Sat",   zh:"商業通信/遙感衛星"},  massMin:150, sciBonus:10, cost:4500,  desc:{en:"High-resolution Earth observation & relay transponder", zh:"高精度對地觀測與中繼轉發載荷"} },
+    orbiter:  { id:"orbiter",  name:{en:"Lunar Orbital Mapper",          zh:"月球軌道測繪器"},     massMin:250, sciBonus:22, cost:7500,  desc:{en:"Multispectral camera & lunar gravity field mapper", zh:"配備多光譜相機與月球重力場測繪儀"} },
+    lander:   { id:"lander",   name:{en:"Lunar Surface Science Lander",  zh:"月面科學著陸器"},     massMin:450, sciBonus:35, cost:11000, desc:{en:"Shock-absorbing landing legs & regolith lab", zh:"配備緩衝著陸腿與月壤分析實驗室"} },
+    deepspace:{ id:"deepspace",name:{en:"Deep-Space Planetary Probe",    zh:"深空行星際探測器"},   massMin:600, sciBonus:50, cost:15000, desc:{en:"RTG nuclear power source & high-gain deep space dish", zh:"核同位素電源與深空高增益天線"} }
+  };
+
+  const CAMPAIGN_MISSIONS = [
+    {
+      id: 1, code: "M1",
+      title: { en:"Suborbital Pathfinder", zh:"亞軌道探空測試 (Suborbital Pathfinder)" },
+      desc:  { en:"Validate first-generation propulsion and airframe telemetry by lofting a science pod to 180 km.", zh:"驗證首型運載火箭結構與推進系統，將科學探空儀送入 180 km 亞軌道高度。" },
+      minPayload: 80, reqDv: 4.2, minTwr: 1.20,
+      rewardFunds: 42000, rewardSci: 25, rewardRep: 8,
+      recommendedPayload: "sounding"
+    },
+    {
+      id: 2, code: "M2",
+      title: { en:"LEO Satellite Deployment", zh:"近地軌道衛星部署 (LEO Satellite)" },
+      desc:  { en:"Execute multi-stage orbital insertion into a 400 km circular Low Earth Orbit.", zh:"使用多級火箭進入 400 km 穩定近地圓軌道，部署首顆多功能科學衛星。" },
+      minPayload: 150, reqDv: 7.8, minTwr: 1.20,
+      rewardFunds: 68000, rewardSci: 35, rewardRep: 12,
+      recommendedPayload: "comsat"
+    },
+    {
+      id: 3, code: "M3",
+      title: { en:"SSO Polar Remote Sensing", zh:"太陽同步高軌遙感 (SSO Polar)" },
+      desc:  { en:"High-inclination polar orbit launch requiring elevated Δv and structural durability.", zh:"高傾角極地軌道發射，要求更高的入軌速度增量與結構可靠性。" },
+      minPayload: 220, reqDv: 8.6, minTwr: 1.22,
+      rewardFunds: 95000, rewardSci: 45, rewardRep: 15,
+      recommendedPayload: "comsat"
+    },
+    {
+      id: 4, code: "M4",
+      title: { en:"Lunar Orbiter Pathfinder", zh:"月球軌道探路者 (Lunar Orbiter)" },
+      desc:  { en:"Trans-lunar injection! Deliver a mapping satellite into lunar orbit to survey landing zones.", zh:"經典地月轉移任務！將測繪衛星送入環月軌道，繪製未來著陸區高精度地圖。" },
+      minPayload: 250, reqDv: 9.4, minTwr: 1.20,
+      rewardFunds: 135000, rewardSci: 65, rewardRep: 22,
+      recommendedPayload: "orbiter"
+    },
+    {
+      id: 5, code: "M5",
+      title: { en:"Lunar South Pole Lander", zh:"月球南極著陸器投送 (Lunar Lander)" },
+      desc:  { en:"Deliver a heavy robotic lander to the lunar south pole to prospect for water ice.", zh:"攜帶重型著陸器執行地月轉移與動力下降制動，尋找永久陰影區水冰。" },
+      minPayload: 450, reqDv: 10.6, minTwr: 1.25,
+      rewardFunds: 185000, rewardSci: 90, rewardRep: 30,
+      recommendedPayload: "lander"
+    },
+    {
+      id: 6, code: "M6",
+      title: { en:"Deep Space Mars Transfer", zh:"火星轉移窗口深空探測 (Mars Probe)" },
+      desc:  { en:"Ultimate deep-space challenge! Exceed Earth escape velocity with a high-Isp two-stage rocket.", zh:"終極深空挑戰！利用雙級高比衝火箭突破第二宇宙速度，奔向紅色星球。" },
+      minPayload: 600, reqDv: 11.8, minTwr: 1.25,
+      rewardFunds: 260000, rewardSci: 140, rewardRep: 45,
+      recommendedPayload: "deepspace"
+    }
+  ];
+
+  const CONTRACT_POOL = [
+    { id:"c_weather", title:{en:"Meteorological Polar Sat", zh:"氣象局極軌衛星補網"}, minPayload:120, reqDv:6.5, minTwr:1.2, payout:56000, sci:12, rep:6, desc:{en:"Rapid-response commercial launch requiring baseline orbital Δv.", zh:"快速響應商業發射訂單，要求滿足基本入軌速度增量。"} },
+    { id:"c_telecom", title:{en:"Constellation Relay Node", zh:"星鏈中繼衛星組網"}, minPayload:200, reqDv:7.9, minTwr:1.2, payout:84000, sci:15, rep:9, desc:{en:"Deploy broadband LEO relay satellites for a private telecom operator.", zh:"為私營航天通信公司部署低軌寬帶星座節點。"} },
+    { id:"c_gto",     title:{en:"Commercial GTO Comsat",    zh:"地球同步轉移軌道商業載荷"}, minPayload:260, reqDv:9.1, minTwr:1.2, payout:112000, sci:20, rep:12, desc:{en:"High-value geostationary transfer launch demanding upper-stage Δv reserves.", zh:"高價值高軌商業發射，需充足的上面級 Δv 儲備。"} },
+    { id:"c_lunar_c", title:{en:"Lunar Research Rideshare", zh:"國際月球科研載荷搭載"}, minPayload:320, reqDv:9.6, minTwr:1.22, payout:148000, sci:30, rep:16, desc:{en:"Deliver a university consortium lunar particle detector into lunar orbit.", zh:"受託將大學聯合研製的月球粒子探測器送入環月軌道。"} }
+  ];
+
+  const TECH_TREE = [
+    { id:"hydrolox",      name:{en:"Cryogenic Hydrolox Propulsion", zh:"低溫液氫液氧推進 (Hydrolox)"}, costSci:30, desc:{en:"Unlocks upper-stage engine \"Hyperion-H\" (425s Isp) for lunar & deep-space Δv.", zh:"解鎖上面級發動機「Hyperion-H」(比衝高達 425s)，大幅提升月球與深空 Δv。"} },
+    { id:"recovery_sys",  name:{en:"Autonomous Booster Recovery",   zh:"一級助推器垂直回收系統"},      costSci:35, desc:{en:"Boosts Stage 1 recovery hardware refund from 35% to 45% on successful flights.", zh:"提高可回收組件返還效率（回收比例提升至 45%），降低重複發射成本。"} },
+    { id:"carbon_struct", name:{en:"Carbon-Nanotube Composites",     zh:"碳奈米複合材料箭體"},          costSci:45, desc:{en:"Unlocks \"Carbon-Nanotube Ultralight\" structure with ultra-low dry mass & 1.12 durability.", zh:"解鎖「碳奈米超輕結構」，兼顧極低乾重與 1.12 高結構耐用度。"} },
+    { id:"blackbox_ai",   name:{en:"Black-Box Telemetry AI",         zh:"黑盒子遙測與故障診斷AI"},      costSci:40, desc:{en:"Reduces anomaly probability by 4% and grants +20 bonus Science on failure investigations.", zh:"降低全系火箭 4% 固有故障率，且任務失敗時事故調查額外獲得 +20 科研點。"} },
+    { id:"staged_comb",   name:{en:"Full-Flow Staged Combustion",    zh:"全流量分級燃燒循環"},          costSci:65, desc:{en:"Unlocks heavy booster engine \"Raptor-X\" (2900 kN thrust · 362s Isp).", zh:"解鎖頂級一級發動機「Raptor-X」(推力 2900 kN · 比衝 362s)。"} },
+    { id:"tech_license",  name:{en:"Aerospace Patent Licensing",     zh:"商業航天專利技術授權"},        costSci:50, desc:{en:"Licenses flight-proven tech to commercial partners, generating +$6,500/mo passive income.", zh:"將已驗證的航天技術授權給民用企業，每月產生 +$6,500 穩定被動收入。"} }
+  ];
+
+  // =========================================================================
+  // 2. INITIAL STATE & PERSISTENCE (localStorage)
+  // =========================================================================
+  function getDefaultState() {
+    return {
+      lang: "en",
+      month: 1,
+      funds: 120000,
+      science: 20,
+      reputation: 10,
+      creditLimit: 100000,
+      aidUsed: false,
+      aidDebt: 0,
+      crisisStage: 0,
+      unpaidStreak: 0,
+      restructureUnpaidStreak: 0,
+      restructurePlanUsed: false,
+      bankrupt: false,
+      bankruptReasonKey: "",
+      unlockedMissionId: 1,
+      completedMissions: [],
+      selectedMissionId: 1,
+      activeContract: null,
+      unlockedTech: [],
+      padLevel: 1,
+      labLevel: 1,
+      design: {
+        useStage2: true,
+        equipRecovery: false,
+        buyInsurance: false,
+        s1Engine: "merlin",
+        s1Structure: "standard",
+        s1Fuel: 80,
+        s2Engine: "vac",
+        s2Structure: "light",
+        s2Fuel: 75,
+        payloadType: "sounding",
+        payloadMass: 125
+      },
+      blueprints: [
+        {
+          id: "bp_starter",
+          name: "Pathfinder-I · Two-Stage",
+          design: {
+            useStage2: true, equipRecovery: false, buyInsurance: false,
+            s1Engine: "merlin", s1Structure: "standard", s1Fuel: 80,
+            s2Engine: "vac", s2Structure: "light", s2Fuel: 75,
+            payloadType: "sounding", payloadMass: 125
+          }
+        }
+      ],
+      ledger: [
+        { month: 1, desc: "Initial National Aerospace Agency Grant", descZh: "國家航天局初始建局撥款", delta: 120000, balance: 120000, debt: 0 }
+      ],
+      flightLogs: []
+    };
+  }
+
+  let state = loadState();
+  let latestTelemetry = {};
+
+  function t() {
+    return I18N[state.lang] || I18N.en;
+  }
+
+  function loc(obj) {
+    if (!obj) return "";
+    if (typeof obj === "string") return obj;
+    return obj[state.lang] || obj.en || "";
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return getDefaultState();
+      const parsed = JSON.parse(raw);
+      return { ...getDefaultState(), ...parsed, design: { ...getDefaultState().design, ...(parsed.design || {}) } };
+    } catch (e) {
+      return getDefaultState();
+    }
+  }
+
+  function saveState(showNotify = false) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (showNotify) showToast(t().toastSaved);
+    } catch (e) {
+      showToast(t().toastSaveErr);
+    }
+  }
+
+  function showToast(msg) {
+    const el = $("toastBox");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => el.classList.remove("show"), 3200);
+  }
+
+  function fmtMoney(n) {
+    const sign = n < 0 ? "-" : "";
+    return sign + "$" + Math.abs(Math.round(n)).toLocaleString();
+  }
+
+  // =========================================================================
+  // 3. FINANCIAL SURVIVAL SYSTEM CORE ENGINE
+  // =========================================================================
+  function getMonthlyExpenses() {
+    return 8000 + (state.padLevel * 2500) + (state.labLevel * 2000);
+  }
+
+  function getMonthlyPassiveIncome() {
+    if (!state.unlockedTech.includes("tech_license")) return 0;
+    return 6500 + (state.labLevel - 1) * 2000;
+  }
+
+  function recordLedger(descEn, descZh, delta) {
+    state.ledger.unshift({
+      month: state.month,
+      desc: descEn,
+      descZh: descZh || descEn,
+      delta: Math.round(delta),
+      balance: Math.round(state.funds),
+      debt: Math.round(state.aidDebt)
+    });
+    if (state.ledger.length > 120) state.ledger.pop();
+  }
+
+  function applyFundsDelta(amount, descEn, descZh) {
+    state.funds = Math.round(state.funds + amount);
+    recordLedger(descEn, descZh || descEn, amount);
+    evaluateFinancialCrisisState();
+  }
+
+  function receiveContractOrMissionPayout(grossAmount, descEn, descZh) {
+    let actualCash = Math.round(grossAmount);
+    let repaid = 0;
+    if (state.aidDebt > 0 && actualCash > 0) {
+      repaid = Math.min(state.aidDebt, Math.round(actualCash * 0.20));
+      state.aidDebt = Math.max(0, state.aidDebt - repaid);
+      actualCash -= repaid;
+    }
+    state.funds += actualCash;
+    const noteEn = repaid > 0 ? descEn + I18N.en.ledAutoRepay(fmtMoney(repaid)) : descEn;
+    const noteZh = repaid > 0 ? (descZh || descEn) + I18N.zh.ledAutoRepay(fmtMoney(repaid)) : (descZh || descEn);
+    recordLedger(noteEn, noteZh, actualCash);
+    evaluateFinancialCrisisState();
+    return { actualCash, repaid };
+  }
+
+  function canAffordExpenditure(cost) {
+    return (state.funds - cost) >= -state.creditLimit;
+  }
+
+  function evaluateFinancialCrisisState() {
+    if (state.bankrupt) return;
+    const currentDebt = state.funds < 0 ? Math.abs(state.funds) : 0;
+
+    if (currentDebt >= state.creditLimit || state.unpaidStreak >= 2) {
+      if (state.crisisStage < 2) {
+        state.crisisStage = 2;
+        showToast(t().toastRestructWarn);
+      }
+    } else if (state.funds < 0) {
+      if (state.crisisStage !== 2) state.crisisStage = 1;
+    } else {
+      if (state.funds >= 15000 && state.unpaidStreak === 0) {
+        state.crisisStage = 0;
+        state.restructureUnpaidStreak = 0;
+      } else if (state.crisisStage === 1) {
+        state.crisisStage = 0;
+      }
+    }
+  }
+
+  function advanceMonthSettlement() {
+    if (state.bankrupt) return;
+    const expenses = getMonthlyExpenses();
+    const passiveInc = getMonthlyPassiveIncome();
+    const netMonthly = passiveInc - expenses;
+    const hadEnoughCashBefore = state.funds >= expenses;
+
+    state.month += 1;
+
+    if (passiveInc > 0) {
+      state.funds += passiveInc;
+      recordLedger(I18N.en.ledPassive(state.month), I18N.zh.ledPassive(state.month), passiveInc);
+    }
+
+    state.funds -= expenses;
+    recordLedger(I18N.en.ledOpex(state.month), I18N.zh.ledOpex(state.month), -expenses);
+
+    if (!hadEnoughCashBefore && state.funds < 0) {
+      state.unpaidStreak += 1;
+    } else if (state.funds >= 0) {
+      state.unpaidStreak = 0;
+    }
+
+    evaluateFinancialCrisisState();
+
+    if (state.crisisStage === 2) {
+      if (state.funds < 0) {
+        state.restructureUnpaidStreak += 1;
+      } else {
+        state.restructureUnpaidStreak = 0;
+      }
+
+      const noViableRecovery = (state.funds <= -state.creditLimit) && state.aidUsed && state.restructurePlanUsed && !state.activeContract;
+      if (state.aidUsed && (state.restructureUnpaidStreak >= 3 || noViableRecovery)) {
+        triggerBankruptcy(state.restructureUnpaidStreak >= 3 ? "bankruptReason3Mo" : "bankruptReasonNoRec");
+      }
+    }
+
+    saveState();
+    renderAll();
+    if (!state.bankrupt) {
+      const sign = netMonthly >= 0 ? "+" : "";
+      showToast(t().toastMonthAdv(state.month, sign + fmtMoney(netMonthly)));
+    }
+  }
+
+  function claimEmergencyAid() {
+    if (state.aidUsed || !(state.funds < 25000)) return;
+    if (state.crisisStage >= 2 && state.restructureUnpaidStreak >= 2) return;
+
+    state.aidUsed = true;
+    state.aidDebt = 96000;
+    state.funds += 80000;
+    recordLedger(I18N.en.ledAid, I18N.zh.ledAid, 80000);
+    evaluateFinancialCrisisState();
+    saveState();
+    renderAll();
+    showToast(t().toastAidClaimed);
+  }
+
+  function triggerBankruptcy(reasonKey) {
+    state.bankrupt = true;
+    state.crisisStage = 3;
+    state.bankruptReasonKey = reasonKey;
+    saveState();
+    showBankruptcyModal();
+  }
+
+  // =========================================================================
+  // 4. ENGINEERING TELEMETRY & PRE-LAUNCH CHECKLIST ENGINE
+  // =========================================================================
+  function getActiveTargetRequirements() {
+    const mission = CAMPAIGN_MISSIONS.find(m => m.id === state.selectedMissionId) || CAMPAIGN_MISSIONS[0];
+    if (state.activeContract) {
+      const cPool = CONTRACT_POOL.find(x => x.id === state.activeContract.id) || state.activeContract;
+      const titleEn = `[Contract] ${locObjLang(cPool.title, "en")}`;
+      const titleZh = `[商業合約] ${locObjLang(cPool.title, "zh")}`;
+      return {
+        isContract: true,
+        id: state.activeContract.id,
+        title: state.lang === "zh" ? titleZh : titleEn,
+        titleEn,
+        titleZh,
+        minPayload: state.activeContract.minPayload,
+        reqDv: state.activeContract.reqDv,
+        minTwr: state.activeContract.minTwr,
+        rewardFunds: state.activeContract.payout,
+        rewardSci: state.activeContract.sci,
+        rewardRep: state.activeContract.rep
+      };
+    }
+    const titleEn = `${mission.code} · ${mission.title.en}`;
+    const titleZh = `${mission.code} · ${mission.title.zh}`;
+    return {
+      isContract: false,
+      id: mission.id,
+      title: state.lang === "zh" ? titleZh : titleEn,
+      titleEn,
+      titleZh,
+      minPayload: mission.minPayload,
+      reqDv: mission.reqDv,
+      minTwr: mission.minTwr,
+      rewardFunds: mission.rewardFunds,
+      rewardSci: mission.rewardSci,
+      rewardRep: mission.rewardRep
+    };
+  }
+
+  function locObjLang(obj, lang) {
+    if (!obj) return "";
+    if (typeof obj === "string") return obj;
+    return obj[lang] || obj.en || "";
+  }
+
+  function calculateEngineering() {
+    const L = t();
+    const d = state.design;
+    const s1Eng = ENGINES[d.s1Engine];
+    const s1Str = STRUCTURES[d.s1Structure];
+    const s2Eng = ENGINES[d.s2Engine];
+    const s2Str = STRUCTURES[d.s2Structure];
+    const payObj = PAYLOADS[d.payloadType];
+
+    const payloadMass = Number(d.payloadMass);
+    const s1FuelPct = Number(d.s1Fuel);
+    const s2FuelPct = Number(d.s2Fuel);
+
+    const s2Prop = d.useStage2 ? s2FuelPct * 52 : 0;
+    const s2Dry = d.useStage2 ? (s2Eng.dry + s2Str.s2Mass + payloadMass) : payloadMass;
+    const s2InitialMass = s2Dry + s2Prop;
+    const dv2 = (d.useStage2 && s2Prop > 0) ? (s2Eng.isp * 9.81 * Math.log(s2InitialMass / s2Dry)) / 1000 : 0;
+
+    const s1Prop = s1FuelPct * 165;
+    const recoveryMass = d.equipRecovery ? 650 : 0;
+    const s1Dry = s1Eng.dry + s1Str.s1Mass + recoveryMass + s2InitialMass;
+    const totalMass = s1Dry + s1Prop;
+
+    const twr1 = (s1Eng.thrust * 1000) / (totalMass * 9.81);
+    const dv1 = (s1Eng.isp * 9.81 * Math.log(totalMass / s1Dry)) / 1000;
+    const totalDv = dv1 + dv2;
+
+    const target = getActiveTargetRequirements();
+
+    const avgDurability = d.useStage2 ? (s1Str.durability + s2Str.durability) / 2 : s1Str.durability;
+    const rawMargin = ((totalDv / target.reqDv) * 48) + ((twr1 / target.minTwr) * 20) + (avgDurability * 28) - 52;
+    const margin = Math.round(Math.max(5, Math.min(99, rawMargin)));
+
+    const s1HardwareCost = s1Eng.cost + s1Str.cost;
+    const s2HardwareCost = d.useStage2 ? (s2Eng.cost + s2Str.cost) : 0;
+    const propellantCost = Math.round((s1FuelPct * 32) + (d.useStage2 ? s2FuelPct * 18 : 0));
+    const buildCost = s1HardwareCost + s2HardwareCost + payObj.cost + propellantCost;
+
+    const baseOpsCost = 6000;
+    const recoveryCost = d.equipRecovery ? 4500 : 0;
+    const insuranceCost = d.buyInsurance ? Math.round((buildCost + baseOpsCost) * 0.12) : 0;
+    const opsCost = baseOpsCost + recoveryCost + insuranceCost;
+    const totalCost = buildCost + opsCost;
+
+    const padMaxMass = state.padLevel === 1 ? 36000 : state.padLevel === 2 ? 55000 : 90000;
+
+    const techOK = (!s1Eng.tech || state.unlockedTech.includes(s1Eng.tech))
+                && (!s1Str.tech || state.unlockedTech.includes(s1Str.tech))
+                && (!d.useStage2 || !s2Eng.tech || state.unlockedTech.includes(s2Eng.tech))
+                && (!d.useStage2 || !s2Str.tech || state.unlockedTech.includes(s2Str.tech));
+
+    const checks = [
+      { label: L.chkPayload(target.minPayload), val: `${payloadMass} kg`, pass: payloadMass >= target.minPayload },
+      { label: L.chkDv(target.reqDv.toFixed(1)), val: `${totalDv.toFixed(2)} km/s`, pass: totalDv >= target.reqDv },
+      { label: L.chkTwr(target.minTwr.toFixed(2)), val: `${twr1.toFixed(2)}`, pass: twr1 >= target.minTwr },
+      { label: L.chkPad((padMaxMass / 1000).toFixed(0), state.padLevel), val: `${(totalMass / 1000).toFixed(1)}t`, pass: totalMass <= padMaxMass },
+      { label: L.chkTech, val: techOK ? L.chkTechOk : L.chkTechLock, pass: techOK },
+      { label: L.chkBudget(fmtMoney(totalCost)), val: canAffordExpenditure(totalCost) ? L.chkBudgetOk : L.chkBudgetNo, pass: canAffordExpenditure(totalCost) && !state.bankrupt }
+    ];
+
+    const ready = checks.every(c => c.pass);
+
+    latestTelemetry = {
+      d: { ...d }, s1Eng, s1Str, s2Eng, s2Str, payObj,
+      payloadMass, totalMass, twr1, dv1, dv2, totalDv,
+      margin, s1HardwareCost, s2HardwareCost, buildCost, opsCost, totalCost,
+      insuranceCost, recoveryCost, checks, ready, target
+    };
+
+    return latestTelemetry;
+  }
+
+  // =========================================================================
+  // 5. LAUNCH SEQUENCE, ANIMATION & FAILURE TIERS
+  // =========================================================================
+  let isLaunching = false;
+
+  function executeLaunch() {
+    if (isLaunching) return;
+    const L = t();
+    const tel = calculateEngineering();
+    if (!tel.ready) {
+      showToast(L.toastCheckFail);
+      return;
+    }
+
+    isLaunching = true;
+    $("launchBtn").disabled = true;
+
+    applyFundsDelta(-tel.totalCost, I18N.en.ledLaunch(tel.target.titleEn), I18N.zh.ledLaunch(tel.target.titleZh));
+    renderResourceBar();
+
+    const rocket = $("rocket");
+    const booster = $("boosterDrop");
+    const caption = $("flightCaption");
+    const phaseTag = $("flightPhaseTag");
+    const telemBox = $("liveTelemBox");
+
+    rocket.classList.remove("fly", "fail-arc");
+    booster.classList.remove("active");
+    caption.textContent = "FLIGHT DIRECTOR: T-00 IGNITION & LIFTOFF!";
+    phaseTag.textContent = L.phaseAscent;
+    phaseTag.className = "tag gold";
+
+    $("report").innerHTML = `
+      <h4>${L.repLaunchTitle(tel.target.title)}</h4>
+      <p>${L.repLaunchP1(loc(tel.s1Eng.name), tel.twr1.toFixed(2))}</p>
+      <p>${L.repLaunchP2}</p>
+    `;
+
+    const baseRel = tel.d.useStage2 ? (tel.s1Eng.rel + tel.s2Eng.rel) / 2 : tel.s1Eng.rel;
+    const padBonus = (state.padLevel - 1) * 0.015;
+    const aiBonus = state.unlockedTech.includes("blackbox_ai") ? 0.04 : 0;
+    const marginBonus = (tel.margin - 50) * 0.0022;
+    const successProb = Math.max(0.55, Math.min(0.97, baseRel + padBonus + aiBonus + marginBonus));
+    const isSuccess = Math.random() < successProb;
+
+    setTimeout(() => {
+      if (tel.d.useStage2) {
+        caption.textContent = "FLIGHT DIRECTOR: MECO & STAGE SEPARATION!";
+        booster.classList.add("active");
+      }
+      telemBox.textContent = `ALT: 112.4 km · VEL: ${(tel.totalDv * 420).toFixed(0)} m/s`;
+    }, 1500);
+
+    setTimeout(() => {
+      rocket.classList.add(isSuccess ? "fly" : "fail-arc");
+    }, 150);
+
+    setTimeout(() => {
+      resolveFlightOutcome(tel, isSuccess);
+      isLaunching = false;
+      renderAll();
+    }, 4400);
+  }
+
+  function resolveFlightOutcome(tel, isSuccess) {
+    const L = t();
+    const caption = $("flightCaption");
+    const phaseTag = $("flightPhaseTag");
+    const telemBox = $("liveTelemBox");
+
+    let netFinancialDelta = -tel.totalCost;
+    let outcomeEn = "";
+    let outcomeZh = "";
+    let sciEarned = 0;
+    let repEarned = 0;
+    let detailHtml = "";
+
+    if (isSuccess) {
+      caption.textContent = "MISSION CONTROL: ORBITAL INSERTION CONFIRMED";
+      phaseTag.textContent = L.phaseSuccess;
+      phaseTag.className = "tag green";
+      telemBox.textContent = `ALT: ORBITAL · Δv: ${tel.totalDv.toFixed(2)} km/s`;
+
+      const labSciMult = 1 + (state.labLevel - 1) * 0.15;
+      sciEarned = Math.round((tel.target.rewardSci + tel.payObj.sciBonus) * labSciMult);
+      repEarned = tel.target.rewardRep;
+
+      let grossPayout = 0;
+      let noteEn = "";
+      let noteZh = "";
+
+      if (tel.target.isContract) {
+        grossPayout = Math.round(tel.target.rewardFunds * 0.75);
+        noteEn = I18N.en.ledContractTail(tel.target.titleEn);
+        noteZh = I18N.zh.ledContractTail(tel.target.titleZh);
+        state.activeContract = null;
+      } else {
+        grossPayout = tel.target.rewardFunds;
+        noteEn = I18N.en.ledCampaignRew(tel.target.titleEn);
+        noteZh = I18N.zh.ledCampaignRew(tel.target.titleZh);
+        if (!state.completedMissions.includes(tel.target.id)) {
+          state.completedMissions.push(tel.target.id);
+        }
+        if (tel.target.id === state.unlockedMissionId && state.unlockedMissionId < CAMPAIGN_MISSIONS.length) {
+          state.unlockedMissionId += 1;
+          state.selectedMissionId = state.unlockedMissionId;
+        }
+      }
+
+      const { actualCash, repaid } = receiveContractOrMissionPayout(grossPayout, noteEn, noteZh);
+      netFinancialDelta += actualCash;
+
+      let recoveryRefund = 0;
+      if (tel.d.equipRecovery) {
+        const recRate = state.unlockedTech.includes("recovery_sys") ? 0.45 : 0.35;
+        const pct = Math.round(recRate * 100);
+        recoveryRefund = Math.round(tel.s1HardwareCost * recRate);
+        applyFundsDelta(recoveryRefund, I18N.en.ledRecovery(pct), I18N.zh.ledRecovery(pct));
+        netFinancialDelta += recoveryRefund;
+      }
+
+      state.science += sciEarned;
+      state.reputation += repEarned;
+      outcomeEn = I18N.en.outcomeSuccessLabel;
+      outcomeZh = I18N.zh.outcomeSuccessLabel;
+
+      detailHtml = `
+        <h4 style="color:var(--green)">${L.repSuccessTitle(tel.target.title)}</h4>
+        <p>${L.repSuccessP1(tel.payloadMass, loc(tel.payObj.name))}</p>
+        <p>${L.repSuccessP2(fmtMoney(grossPayout), repaid > 0 ? fmtMoney(repaid) : "", fmtMoney(actualCash), recoveryRefund > 0 ? fmtMoney(recoveryRefund) : "")}</p>
+        <p>${L.repSuccessP3(sciEarned, repEarned)}</p>
+      `;
+    } else {
+      caption.textContent = "MISSION CONTROL: TELEMETRY ANOMALY DETECTED";
+      phaseTag.textContent = L.phaseAnomaly;
+      phaseTag.className = "tag red";
+      telemBox.textContent = `SIGNAL LOST · T+118s`;
+
+      const roll = Math.random();
+      const tier = roll < 0.38 ? 1 : roll < 0.82 ? 2 : 3;
+
+      let extraLoss = 0;
+      let insuranceReimburse = 0;
+      let tierEn = "";
+      let tierZh = "";
+      let causeText = "";
+
+      if (tier === 1) {
+        const pct = 0.10 + Math.random() * 0.10;
+        extraLoss = Math.round(tel.totalCost * pct);
+        tierEn = I18N.en.tier1Name;
+        tierZh = I18N.zh.tier1Name;
+        causeText = L.tier1Cause;
+        if (tel.d.buyInsurance) insuranceReimburse = Math.round(extraLoss * 0.50);
+        repEarned = -2;
+      } else if (tier === 2) {
+        const pct = 0.50 + Math.random() * 0.30;
+        extraLoss = Math.round(tel.totalCost * pct);
+        tierEn = I18N.en.tier2Name;
+        tierZh = I18N.zh.tier2Name;
+        causeText = L.tier2Cause;
+        if (tel.d.buyInsurance) insuranceReimburse = Math.round(extraLoss * 0.50);
+        repEarned = -5;
+      } else {
+        extraLoss = Math.round(tel.totalCost * 0.45) + 12000;
+        tierEn = I18N.en.tier3Name;
+        tierZh = I18N.zh.tier3Name;
+        causeText = L.tier3Cause;
+        insuranceReimburse = 0;
+        repEarned = -12;
+      }
+
+      if (extraLoss > 0) {
+        applyFundsDelta(-extraLoss, I18N.en.ledFailLoss(tierEn), I18N.zh.ledFailLoss(tierZh));
+        netFinancialDelta -= extraLoss;
+      }
+      if (insuranceReimburse > 0) {
+        applyFundsDelta(insuranceReimburse, I18N.en.ledInsurance, I18N.zh.ledInsurance);
+        netFinancialDelta += insuranceReimburse;
+      }
+
+      let advanceRefund = 0;
+      if (tel.target.isContract && state.activeContract) {
+        advanceRefund = Math.round(state.activeContract.advancePaid * 0.50);
+        applyFundsDelta(-advanceRefund, I18N.en.ledContractClawback(tel.target.titleEn), I18N.zh.ledContractClawback(tel.target.titleZh));
+        netFinancialDelta -= advanceRefund;
+        state.activeContract = null;
+      }
+
+      sciEarned = (tier === 3 ? 35 : tier === 2 ? 22 : 14) + (state.unlockedTech.includes("blackbox_ai") ? 20 : 0);
+      state.science += sciEarned;
+      state.reputation = Math.max(0, state.reputation + repEarned);
+      outcomeEn = `❌ ${tierEn}`;
+      outcomeZh = `❌ ${tierZh}`;
+
+      const tierDisplay = state.lang === "zh" ? tierZh : tierEn;
+      detailHtml = `
+        <h4 style="color:var(--red)">${L.repFailTitle(tierDisplay)}</h4>
+        <p>${L.repFailP1(causeText)}</p>
+        <p>${L.repFailP2(fmtMoney(extraLoss), insuranceReimburse > 0 ? fmtMoney(insuranceReimburse) : "", advanceRefund > 0 ? fmtMoney(advanceRefund) : "")}</p>
+        <p>${L.repFailP3(sciEarned, repEarned)}</p>
+      `;
+    }
+
+    $("report").innerHTML = detailHtml;
+
+    state.flightLogs.unshift({
+      month: state.month,
+      missionEn: tel.target.titleEn,
+      missionZh: tel.target.titleZh,
+      rocketEn: `${tel.s1Eng.name.en.split(" ")[0]}${tel.d.useStage2 ? " + " + tel.s2Eng.name.en.split(" ")[0] : ""}`,
+      rocketZh: `${tel.s1Eng.name.zh.split(" ")[0]}${tel.d.useStage2 ? " + " + tel.s2Eng.name.zh.split(" ")[0] : ""}`,
+      dv: tel.totalDv.toFixed(2),
+      twr: tel.twr1.toFixed(2),
+      outcomeEn,
+      outcomeZh,
+      isSuccess,
+      netDelta: netFinancialDelta,
+      sciEarned,
+      repEarned
+    });
+
+    saveState();
+  }
+
+  // =========================================================================
+  // 6. STATIC & DYNAMIC UI TRANSLATION + RENDERING
+  // =========================================================================
+  function applyStaticTranslations() {
+    const L = t();
+    document.documentElement.lang = state.lang === "zh" ? "zh-Hant" : "en";
+    document.title = L.pageTitle;
+    $("hdrSubtitle").textContent = L.hdrSubtitle;
+    $("langToggleBtn").textContent = L.langBtn;
+    $("advanceMonthBtn").textContent = L.advanceMonthBtn;
+    $("manualSaveBtn").textContent = L.manualSaveBtn;
+    $("resetCampaignBtn").textContent = L.resetCampaignBtn;
+
+    $("lblFundsTitle").textContent = L.lblFundsTitle;
+    $("lblDebtTitle").textContent = L.lblDebtTitle;
+    $("lblSciTitle").textContent = L.lblSciTitle;
+    $("lblRepTitle").textContent = L.lblRepTitle;
+    $("lblRepTag").textContent = L.lblRepTag;
+    $("lblCycleTitle").textContent = L.lblCycleTitle;
+    $("lblCycleTag").textContent = L.lblCycleTag;
+
+    $("bannerAidBtn").textContent = L.bannerAidBtn;
+    $("bannerFinanceTabBtn").textContent = L.bannerFinanceTabBtn;
+
+    $("heroEyebrow").textContent = L.heroEyebrow;
+    $("heroTitle").textContent = L.heroTitle;
+    $("heroDesc").textContent = L.heroDesc;
+
+    $("tabBtnWorkshop").textContent = L.tabWorkshop;
+    $("tabBtnMissions").innerHTML = `${L.tabMissions} <span class="badge" id="missionBadge">${state.completedMissions.length}/${CAMPAIGN_MISSIONS.length}</span>`;
+    $("tabBtnRnd").textContent = L.tabRnd;
+    $("tabBtnFinance").innerHTML = `${L.tabFinance} <span class="badge" id="financeBadge">OK</span>`;
+    $("tabBtnLogs").innerHTML = `${L.tabLogs} <span class="badge" id="logsBadge">${state.flightLogs.length}</span>`;
+
+    $("wsPanelTitle").textContent = L.wsPanelTitle;
+    $("lblUseStage2").textContent = L.lblUseStage2;
+    $("lblEquipRec").textContent = L.lblEquipRec;
+    $("lblBuyIns").textContent = L.lblBuyIns;
+    $("s1HeaderTitle").textContent = L.s1HeaderTitle;
+    $("s2HeaderTitle").textContent = L.s2HeaderTitle;
+    $("lblS1Eng").textContent = L.lblS1Eng;
+    $("lblS1Str").textContent = L.lblS1Str;
+    $("lblS1Fuel").textContent = L.lblS1Fuel;
+    $("lblS1FuelSub").textContent = L.lblS1FuelSub;
+    $("lblS2Eng").textContent = L.lblS2Eng;
+    $("lblS2Str").textContent = L.lblS2Str;
+    $("lblS2Fuel").textContent = L.lblS2Fuel;
+    $("lblS2FuelSub").textContent = L.lblS2FuelSub;
+    $("payHeaderTitle").textContent = L.payHeaderTitle;
+    $("lblPayType").textContent = L.lblPayType;
+    $("lblPayMass").textContent = L.lblPayMass;
+    $("lblPayMassSub").textContent = L.lblPayMassSub;
+    $("bpSectionLabel").textContent = L.bpSectionLabel;
+    $("bpNameInput").placeholder = L.bpPlaceholder;
+    $("saveBpBtn").textContent = L.saveBpBtn;
+
+    $("campPanelTitle").textContent = L.campPanelTitle;
+    $("campUnlockTag").textContent = L.campUnlockTag;
+    $("campPanelDesc").textContent = L.campPanelDesc;
+    $("contPanelTitle").textContent = L.contPanelTitle;
+    $("contAdvanceTag").textContent = L.contAdvanceTag;
+    $("contPanelDesc").innerHTML = L.contPanelDesc;
+
+    $("rndPanelTitle").textContent = L.rndPanelTitle;
+    $("rndPanelDesc").textContent = L.rndPanelDesc;
+    $("facPanelTitle").textContent = L.facPanelTitle;
+    $("facPanelTag").textContent = L.facPanelTag;
+
+    $("finPanelTitle").textContent = L.finPanelTitle;
+    $("finCard1Name").textContent = L.finCard1Name;
+    $("finCard1Sub").textContent = L.finCard1Sub;
+    $("finCard2Name").textContent = L.finCard2Name;
+    $("finCard2Sub").textContent = L.finCard2Sub;
+    $("finCard3Name").textContent = L.finCard3Name;
+    $("finCard3Sub").textContent = L.finCard3Sub;
+    $("finCard4Name").textContent = L.finCard4Name;
+    $("finCard4Sub").textContent = L.finCard4Sub;
+    $("finActionsLabel").textContent = L.finActionsLabel;
+    $("aidCardTitle").textContent = L.aidCardTitle;
+    $("aidCardMeta").textContent = L.aidCardMeta;
+    $("aidCardDesc").innerHTML = L.aidCardDesc;
+    $("restCardTitle").textContent = L.restCardTitle;
+    $("restCardMeta").textContent = L.restCardMeta;
+    $("sellAssetsBtn").textContent = L.sellAssetsBtn;
+    $("downgradePadBtn").textContent = L.downgradePadBtn;
+    $("oneTimeRestructureBtn").textContent = L.oneTimeRestructureBtn;
+
+    $("ledgerPanelTitle").textContent = L.ledgerPanelTitle;
+    $("thCycle").textContent = L.thCycle;
+    $("thDesc").textContent = L.thDesc;
+    $("thDelta").textContent = L.thDelta;
+    $("thBal").textContent = L.thBal;
+    $("thDebt").textContent = L.thDebt;
+
+    $("logsPanelTitle").textContent = L.logsPanelTitle;
+    $("logsPanelDesc").textContent = L.logsPanelDesc;
+    $("thLogCycle").textContent = L.thLogCycle;
+    $("thLogMission").textContent = L.thLogMission;
+    $("thLogTelem").textContent = L.thLogTelem;
+    $("thLogOutcome").textContent = L.thLogOutcome;
+    $("thLogPnl").textContent = L.thLogPnl;
+    $("thLogSci").textContent = L.thLogSci;
+
+    $("sideTelemTitle").textContent = L.sideTelemTitle;
+    $("statMassName").textContent = L.statMassName;
+    $("statTwrName").textContent = L.statTwrName;
+    $("statDvName").textContent = L.statDvName;
+    $("statMarginName").textContent = L.statMarginName;
+    $("costBreakLabel").textContent = L.costBreakLabel;
+    $("lblBuildCost").textContent = L.lblBuildCost;
+    $("lblOpsCost").textContent = L.lblOpsCost;
+    $("lblTotalCost").textContent = L.lblTotalCost;
+    $("checklistLabel").textContent = L.checklistLabel;
+    $("lblRelScore").textContent = L.lblRelScore;
+    $("launchBtn").textContent = L.launchBtn;
+    $("resetDesignBtn").textContent = L.resetDesignBtn;
+    $("flightOpsTitle").textContent = L.flightOpsTitle;
+    $("footerText").textContent = L.footerText;
+  }
+
+  function renderResourceBar() {
+    const L = t();
+    $("resFunds").textContent = fmtMoney(state.funds);
+    $("resFunds").style.color = state.funds < 0 ? "var(--red)" : state.funds < 25000 ? "var(--gold)" : "var(--text)";
+
+    const availCredit = Math.max(0, state.creditLimit + Math.min(0, state.funds));
+    $("resCreditSub").textContent = L.creditAvail(fmtMoney(availCredit));
+
+    $("resDebt").textContent = fmtMoney(state.aidDebt);
+    $("resDebt").style.color = state.aidDebt > 0 ? "var(--gold)" : "var(--text)";
+    $("resDebtSub").textContent = state.aidDebt > 0 ? L.autoRepayOn : L.autoRepayOff;
+    $("aidStatusTag").textContent = state.aidUsed ? L.aidUsed : L.aidReady;
+    $("aidStatusTag").className = state.aidUsed ? "tag" : "tag gold";
+
+    $("resScience").textContent = state.science;
+    $("resPassiveSub").textContent = L.patentSub(fmtMoney(getMonthlyPassiveIncome()));
+
+    $("resRep").textContent = state.reputation;
+    $("resUpkeepSub").textContent = L.upkeepSub(fmtMoney(getMonthlyExpenses()));
+
+    $("resMonth").textContent = L.monthLabel(state.month);
+    const activeT = getActiveTargetRequirements();
+    $("resActiveMissionSub").textContent = L.targetSub(activeT.title.slice(0, 18));
+    $("campaignStagePill").textContent = L.campaignPill(state.completedMissions.length, CAMPAIGN_MISSIONS.length);
+
+    const fBadge = $("financeStageBadge");
+    const fundsCard = $("fundsCard");
+    const alertBanner = $("alertBanner");
+    const bannerAidBtn = $("bannerAidBtn");
+
+    fundsCard.classList.remove("warn", "danger");
+    if (state.crisisStage === 2) {
+      fBadge.textContent = L.stageRestructure;
+      fBadge.className = "tag red";
+      fundsCard.classList.add("danger");
+    } else if (state.crisisStage === 1) {
+      fBadge.textContent = L.stageCrisis;
+      fBadge.className = "tag red";
+      fundsCard.classList.add("danger");
+    } else if (state.funds < 25000) {
+      fBadge.textContent = L.stageWarn;
+      fBadge.className = "tag gold";
+      fundsCard.classList.add("warn");
+    } else {
+      fBadge.textContent = L.stageHealthy;
+      fBadge.className = "tag green";
+    }
+
+    $("financeBadge").textContent = state.crisisStage === 2 ? L.finBadgeRest : state.crisisStage === 1 ? L.finBadgeCrisis : state.funds < 25000 ? L.finBadgeWarn : L.finBadgeOk;
+
+    if (state.funds < 25000 || state.crisisStage > 0) {
+      alertBanner.classList.add("show");
+      alertBanner.classList.toggle("danger", state.crisisStage > 0);
+      if (state.crisisStage === 2) {
+        $("alertText").textContent = L.alertRestructure;
+      } else if (state.crisisStage === 1) {
+        $("alertText").textContent = L.alertCrisis(fmtMoney(state.funds));
+      } else {
+        $("alertText").textContent = L.alertWarn(fmtMoney(state.funds));
+      }
+      const canAid = !state.aidUsed && state.funds < 25000 && !(state.crisisStage >= 2 && state.restructureUnpaidStreak >= 2);
+      bannerAidBtn.style.display = canAid ? "inline-block" : "none";
+    } else {
+      alertBanner.classList.remove("show");
+    }
+  }
+
+  function renderWorkshopSelects() {
+    const L = t();
+    const d = state.design;
+    $("useStage2").checked = d.useStage2;
+    $("equipRecovery").checked = d.equipRecovery;
+    $("buyInsurance").checked = d.buyInsurance;
+    $("stage2Box").style.display = d.useStage2 ? "block" : "none";
+    $("stageModeTag").textContent = d.useStage2 ? L.stageMode2 : L.stageMode1;
+
+    $("s1Engine").innerHTML = Object.values(ENGINES).filter(e => e.stage === 1).map(e => {
+      const unlocked = !e.tech || state.unlockedTech.includes(e.tech);
+      return `<option value="${e.id}" ${d.s1Engine === e.id ? "selected" : ""}>${loc(e.name)} (${fmtMoney(e.cost)})${unlocked ? "" : L.needTechSuffix}</option>`;
+    }).join("");
+
+    $("s2Engine").innerHTML = Object.values(ENGINES).filter(e => e.stage === 2).map(e => {
+      const unlocked = !e.tech || state.unlockedTech.includes(e.tech);
+      return `<option value="${e.id}" ${d.s2Engine === e.id ? "selected" : ""}>${loc(e.name)} (${fmtMoney(e.cost)})${unlocked ? "" : L.needTechSuffix}</option>`;
+    }).join("");
+
+    ["s1Structure", "s2Structure"].forEach(selId => {
+      const cur = d[selId];
+      $(selId).innerHTML = Object.values(STRUCTURES).map(s => {
+        const unlocked = !s.tech || state.unlockedTech.includes(s.tech);
+        return `<option value="${s.id}" ${cur === s.id ? "selected" : ""}>${loc(s.name)} (${fmtMoney(s.cost)})${unlocked ? "" : L.needTechSuffix}</option>`;
+      }).join("");
+    });
+
+    $("payloadType").innerHTML = Object.values(PAYLOADS).map(p =>
+      `<option value="${p.id}" ${d.payloadType === p.id ? "selected" : ""}>${loc(p.name)} (${fmtMoney(p.cost)} · +${p.sciBonus}🔬)</option>`
+    ).join("");
+
+    $("s1Fuel").value = d.s1Fuel;
+    $("s2Fuel").value = d.s2Fuel;
+    $("payloadMass").value = d.payloadMass;
+
+    const s1E = ENGINES[d.s1Engine], s1S = STRUCTURES[d.s1Structure];
+    const s2E = ENGINES[d.s2Engine], s2S = STRUCTURES[d.s2Structure];
+    const pObj = PAYLOADS[d.payloadType];
+
+    $("s1EngineSpec").textContent = L.engSpec(s1E.thrust, s1E.isp, s1E.dry);
+    $("s1StructSpec").textContent = L.strSpec(s1S.s1Mass, s1S.durability);
+    $("s1CostTag").textContent = L.hardwareTag(fmtMoney(s1E.cost + s1S.cost));
+
+    $("s2EngineSpec").textContent = L.engSpec(s2E.thrust, s2E.isp, s2E.dry);
+    $("s2StructSpec").textContent = L.strSpec(s2S.s2Mass, s2S.durability);
+    $("s2CostTag").textContent = L.hardwareTag(fmtMoney(s2E.cost + s2S.cost));
+
+    $("payloadDesc").textContent = loc(pObj.desc);
+    $("s1FuelVal").textContent = d.s1Fuel + "%";
+    $("s2FuelVal").textContent = d.s2Fuel + "%";
+    $("payloadMassVal").textContent = d.payloadMass + " kg";
+  }
+
+  function renderTelemetryAndChecklist() {
+    const L = t();
+    const tel = calculateEngineering();
+    $("targetMissionTag").textContent = L.targetTagPrefix(tel.target.title.slice(0, 18));
+    $("payloadReqTag").textContent = L.payReqTag(tel.target.minPayload);
+
+    $("mass").innerHTML = `${Math.round(tel.totalMass).toLocaleString()}<span class="unit">kg</span>`;
+    $("twr").innerHTML = `${tel.twr1.toFixed(2)}<span class="unit">TWR</span>`;
+    $("dv").innerHTML = `${tel.totalDv.toFixed(2)}<span class="unit">km/s</span>`;
+    $("margin").innerHTML = `${tel.margin}<span class="unit">%</span>`;
+
+    $("buildCostText").textContent = fmtMoney(tel.buildCost);
+    $("opsCostText").textContent = fmtMoney(tel.opsCost);
+    $("totalLaunchCostText").textContent = fmtMoney(tel.totalCost);
+
+    $("prelaunchChecklist").innerHTML = tel.checks.map(c => `
+      <li class="${c.pass ? "pass" : "fail"}">
+        <span>${c.pass ? "✔" : "✖"} ${c.label}</span>
+        <strong>${c.val}</strong>
+      </li>
+    `).join("");
+
+    $("score").textContent = `${tel.margin} / 100`;
+    $("scoreBar").style.width = `${tel.margin}%`;
+
+    const statusEl = $("engineeringStatus");
+    if (tel.ready) {
+      statusEl.className = "status good";
+      statusEl.textContent = L.statusReady;
+    } else {
+      const failedCount = tel.checks.filter(c => !c.pass).length;
+      statusEl.className = "status bad";
+      statusEl.textContent = L.statusNotReady(failedCount);
+    }
+
+    $("launchBtn").disabled = !tel.ready || isLaunching || state.bankrupt;
+  }
+
+  function renderBlueprints() {
+    const L = t();
+    $("blueprintList").innerHTML = state.blueprints.map(bp => {
+      const e1 = loc(ENGINES[bp.design.s1Engine]?.name).split(" ")[0] || "";
+      const e2 = bp.design.useStage2 ? " + " + (loc(ENGINES[bp.design.s2Engine]?.name).split(" ")[0] || "") : ` (${L.bpSingle})`;
+      return `
+        <div class="item-card">
+          <div class="item-top">
+            <div>
+              <div class="item-title">📐 ${bp.name}</div>
+              <div class="item-meta">${L.bpConfig(e1 + e2, bp.design.payloadMass)}</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn-xs" onclick="window._app.loadBlueprint('${bp.id}')">${L.bpLoad}</button>
+              <button class="btn-xs" onclick="window._app.duplicateBlueprint('${bp.id}')">${L.bpDup}</button>
+              ${bp.id !== "bp_starter" ? `<button class="btn-xs" style="color:var(--red)" onclick="window._app.deleteBlueprint('${bp.id}')">${L.bpDel}</button>` : ""}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderMissionsAndContracts() {
+    const L = t();
+    $("missionBadge").textContent = `${state.completedMissions.length}/${CAMPAIGN_MISSIONS.length}`;
+
+    $("campaignMissionList").innerHTML = CAMPAIGN_MISSIONS.map(m => {
+      const unlocked = m.id <= state.unlockedMissionId;
+      const completed = state.completedMissions.includes(m.id);
+      const selected = !state.activeContract && state.selectedMissionId === m.id;
+      return `
+        <div class="item-card ${selected ? "active-card" : ""} ${unlocked ? "" : "locked"}">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${m.code} · ${loc(m.title)}</div>
+              <div class="item-meta">${loc(m.desc)}</div>
+            </div>
+            <div>
+              ${completed ? `<span class="tag green">${L.tagCompleted}</span>` : unlocked ? `<span class="tag gold">${L.tagUnlocked}</span>` : `<span class="tag">${L.tagLocked}</span>`}
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px">
+            <span>${L.reqLine(m.minPayload, m.reqDv, m.minTwr)}</span>
+            <span style="color:var(--gold)">${L.rewLine(fmtMoney(m.rewardFunds), m.rewardSci, m.rewardRep)}</span>
+          </div>
+          ${unlocked ? `
+            <div>
+              <button class="${selected ? "primary" : "secondary"}" style="padding:6px 12px;font-size:12px" onclick="window._app.selectCampaignMission(${m.id})">
+                ${selected ? L.btnSelectedTarget : L.btnSelectTarget}
+              </button>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }).join("");
+
+    if (state.activeContract) {
+      const cPool = CONTRACT_POOL.find(x => x.id === state.activeContract.id) || state.activeContract;
+      const rem = Math.round(state.activeContract.payout * 0.75);
+      const ref = Math.round(state.activeContract.advancePaid * 0.50);
+      $("activeContractBox").innerHTML = `
+        <div class="item-card active-card">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${L.activeContractTitle(loc(cPool.title))}</div>
+              <div class="item-meta">${loc(cPool.desc)}</div>
+            </div>
+            <span class="tag gold">${L.activeContractTag}</span>
+          </div>
+          <div style="font-size:12.5px">
+            ${L.activeContractLine(fmtMoney(state.activeContract.advancePaid), fmtMoney(rem), fmtMoney(ref))}
+          </div>
+          <div>
+            <button class="danger-btn" style="padding:6px 12px;font-size:12px" onclick="window._app.cancelContract()">${L.cancelContractBtn(fmtMoney(ref))}</button>
+          </div>
+        </div>
+      `;
+    } else {
+      $("activeContractBox").innerHTML = `<div class="status" style="margin:0">${L.noActiveContract}</div>`;
+    }
+
+    $("contractList").innerHTML = CONTRACT_POOL.map(c => {
+      const adv = Math.round(c.payout * 0.25);
+      const tail = Math.round(c.payout * 0.75);
+      return `
+        <div class="item-card">
+          <div class="item-top">
+            <div>
+              <div class="item-title">🤝 ${loc(c.title)}</div>
+              <div class="item-meta">${loc(c.desc)}</div>
+            </div>
+            <span class="tag gold">${L.totalPayoutTag(fmtMoney(c.payout))}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:12px">
+            <span>${L.reqLine(c.minPayload, c.reqDv, c.minTwr)}</span>
+            <span>${L.contractTermsLine(fmtMoney(adv), fmtMoney(tail))}</span>
+          </div>
+          <div>
+            <button class="secondary" style="padding:6px 12px;font-size:12px" ${state.activeContract || state.bankrupt ? "disabled" : ""} onclick="window._app.acceptContract('${c.id}')">
+              ${state.activeContract ? L.btnHasContract : L.btnAcceptContract(fmtMoney(adv))}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderRnDAndFacilities() {
+    const L = t();
+    const rndFrozen = state.crisisStage >= 1;
+    $("rndLockNotice").textContent = rndFrozen ? L.rndFrozenTag : L.rndReadyTag(state.science);
+    $("rndLockNotice").className = rndFrozen ? "tag red" : "tag green";
+
+    $("techTreeList").innerHTML = TECH_TREE.map(tech => {
+      const owned = state.unlockedTech.includes(tech.id);
+      const canBuy = !owned && !rndFrozen && state.science >= tech.costSci;
+      return `
+        <div class="item-card ${owned ? "active-card" : ""}">
+          <div class="item-top">
+            <div>
+              <div class="item-title">🔬 ${loc(tech.name)}</div>
+              <div class="item-meta">${loc(tech.desc)}</div>
+            </div>
+            ${owned ? `<span class="tag green">${L.tagResearched}</span>` : `<span class="tag gold">${L.tagCostSci(tech.costSci)}</span>`}
+          </div>
+          ${!owned ? `
+            <div>
+              <button class="primary" style="padding:6px 12px;font-size:12px" ${canBuy ? "" : "disabled"} onclick="window._app.unlockTech('${tech.id}')">
+                ${rndFrozen ? L.btnRndFrozen : state.science < tech.costSci ? L.btnRndNeedSci : L.btnRndUnlock(tech.costSci)}
+              </button>
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }).join("");
+
+    const padUpgradeCost = state.padLevel === 1 ? 35000 : state.padLevel === 2 ? 65000 : 0;
+    const labUpgradeCost = state.labLevel === 1 ? 30000 : state.labLevel === 2 ? 55000 : 0;
+    const facilityFrozen = state.crisisStage >= 2;
+    const padTons = state.padLevel === 1 ? 36 : state.padLevel === 2 ? 55 : 90;
+
+    $("facilityList").innerHTML = `
+      <div class="item-card">
+        <div class="item-top">
+          <div>
+            <div class="item-title">${L.padTitle(state.padLevel)}</div>
+            <div class="item-meta">${L.padMeta(padTons, ((state.padLevel - 1) * 1.5).toFixed(1), fmtMoney(state.padLevel * 2500))}</div>
+          </div>
+          <span class="tag">Lv.${state.padLevel}</span>
+        </div>
+        ${state.padLevel < 3 ? `
+          <div>
+            <button class="secondary" style="padding:6px 12px;font-size:12px" ${facilityFrozen || !canAffordExpenditure(padUpgradeCost) ? "disabled" : ""} onclick="window._app.upgradeFacility('pad')">
+              ${facilityFrozen ? L.btnFacFrozen : L.btnUpgradePad(state.padLevel + 1, fmtMoney(padUpgradeCost))}
+            </button>
+          </div>
+        ` : `<span class="tag green">${L.tagMaxLv}</span>`}
+      </div>
+
+      <div class="item-card">
+        <div class="item-top">
+          <div>
+            <div class="item-title">${L.labTitle(state.labLevel)}</div>
+            <div class="item-meta">${L.labMeta((state.labLevel - 1) * 15, fmtMoney(state.labLevel * 2000))}</div>
+          </div>
+          <span class="tag">Lv.${state.labLevel}</span>
+        </div>
+        ${state.labLevel < 3 ? `
+          <div>
+            <button class="secondary" style="padding:6px 12px;font-size:12px" ${facilityFrozen || !canAffordExpenditure(labUpgradeCost) ? "disabled" : ""} onclick="window._app.upgradeFacility('lab')">
+              ${facilityFrozen ? L.btnFacFrozen : L.btnUpgradeLab(state.labLevel + 1, fmtMoney(labUpgradeCost))}
+            </button>
+          </div>
+        ` : `<span class="tag green">${L.tagMaxLv}</span>`}
+      </div>
+    `;
+  }
+
+  function renderFinanceTab() {
+    const L = t();
+    $("finFundsVal").textContent = fmtMoney(state.funds);
+    $("finFundsVal").style.color = state.funds < 0 ? "var(--red)" : "var(--green)";
+    $("finAidDebtVal").textContent = fmtMoney(state.aidDebt);
+    $("finMonthlyExpVal").textContent = `-${fmtMoney(getMonthlyExpenses())}`;
+    $("finMonthlyIncVal").textContent = `+${fmtMoney(getMonthlyPassiveIncome())}`;
+
+    const badge = $("finPanelBadge");
+    const explain = $("finCrisisExplain");
+    if (state.crisisStage === 2) {
+      badge.textContent = L.stageRestructure;
+      badge.className = "tag red";
+      explain.className = "status bad";
+      explain.textContent = L.finExplainRestructure(state.restructureUnpaidStreak);
+    } else if (state.crisisStage === 1) {
+      badge.textContent = L.stageCrisis;
+      badge.className = "tag red";
+      explain.className = "status warn";
+      explain.textContent = L.finExplainCrisis;
+    } else {
+      badge.textContent = L.stageHealthy;
+      badge.className = "tag green";
+      explain.className = "status good";
+      explain.textContent = L.finExplainHealthy;
+    }
+
+    const canClaimAid = !state.aidUsed && state.funds < 25000 && !(state.crisisStage >= 2 && state.restructureUnpaidStreak >= 2);
+    $("aidLimitTag").textContent = state.aidUsed ? L.aidUsedTag : L.aidAvailTag;
+    $("aidLimitTag").className = state.aidUsed ? "tag" : "tag gold";
+    $("claimAidBtn").disabled = !canClaimAid;
+    $("claimAidBtn").textContent = state.aidUsed ? L.btnAidUsed : state.funds >= 25000 ? L.btnAidAbove : L.btnAidClaim;
+
+    const inRestructure = state.crisisStage === 2;
+    $("restructureTag").textContent = inRestructure ? L.restActiveTag : L.restInactiveTag;
+    $("restructureTag").className = inRestructure ? "tag red" : "tag";
+    $("sellAssetsBtn").disabled = !inRestructure || state.reputation < 3;
+    $("downgradePadBtn").disabled = !inRestructure || (state.padLevel <= 1 && state.labLevel <= 1);
+    $("oneTimeRestructureBtn").disabled = !inRestructure || state.restructurePlanUsed || state.funds >= 0;
+
+    $("ledgerCountTag").textContent = L.ledgerCount(state.ledger.length);
+    $("ledgerTableBody").innerHTML = state.ledger.map(row => `
+      <tr>
+        <td>${L.monthLabel(row.month)}</td>
+        <td>${state.lang === "zh" ? (row.descZh || row.desc) : row.desc}</td>
+        <td class="num-col ${row.delta >= 0 ? "pos" : "neg"}">${row.delta >= 0 ? "+" : ""}${fmtMoney(row.delta)}</td>
+        <td class="num-col">${fmtMoney(row.balance)}</td>
+        <td class="num-col" style="color:${row.debt > 0 ? "var(--gold)" : "var(--muted)"}">${fmtMoney(row.debt)}</td>
+      </tr>
+    `).join("");
+  }
+
+  function renderFlightLogsTab() {
+    const L = t();
+    const total = state.flightLogs.length;
+    const wins = state.flightLogs.filter(f => f.isSuccess).length;
+    $("logsBadge").textContent = total;
+    $("successRateTag").textContent = total > 0 ? L.successRate(Math.round((wins / total) * 100), wins, total) : L.noLogsYet;
+
+    if (total === 0) {
+      $("flightLogTableBody").innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:18px">${L.emptyLogsRow}</td></tr>`;
+      return;
+    }
+
+    $("flightLogTableBody").innerHTML = state.flightLogs.map(log => `
+      <tr>
+        <td>${L.monthLabel(log.month)}</td>
+        <td><strong>${state.lang === "zh" ? (log.missionZh || log.missionEn) : log.missionEn}</strong><br><span style="color:var(--muted);font-size:11px">${state.lang === "zh" ? (log.rocketZh || log.rocketEn) : log.rocketEn}</span></td>
+        <td>${log.dv} km/s · ${log.twr} TWR</td>
+        <td style="color:${log.isSuccess ? "var(--green)" : "var(--red)"}">${state.lang === "zh" ? (log.outcomeZh || log.outcomeEn) : log.outcomeEn}</td>
+        <td class="num-col ${log.netDelta >= 0 ? "pos" : "neg"}">${log.netDelta >= 0 ? "+" : ""}${fmtMoney(log.netDelta)}</td>
+        <td class="num-col">+${log.sciEarned}🔬 / ${log.repEarned >= 0 ? "+" : ""}${log.repEarned}⭐</td>
+      </tr>
+    `).join("");
+  }
+
+  function showBankruptcyModal() {
+    const L = t();
+    const totalFlights = state.flightLogs.length;
+    const failedFlights = state.flightLogs.filter(f => !f.isSuccess).length;
+    const reasonText = L[state.bankruptReasonKey] || L.bankruptReason3Mo;
+    $("modalContent").innerHTML = `
+      <h3 style="color:var(--red)">${L.bankruptTitle}</h3>
+      <p style="color:#d6e4f2;font-size:13.5px">${reasonText}</p>
+      <div class="report" style="margin:14px 0">
+        ${L.bankruptSummary(state.month, fmtMoney(state.funds), fmtMoney(state.aidDebt), totalFlights, failedFlights, state.completedMissions.length, CAMPAIGN_MISSIONS.length)}
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="window._app.hardResetCampaign()">${L.btnRestartCampaign}</button>
+        <button class="secondary" onclick="document.getElementById('modalBackdrop').classList.remove('show')">${L.btnViewArchives}</button>
+      </div>
+    `;
+    $("modalBackdrop").classList.add("show");
+  }
+
+  function renderAll() {
+    applyStaticTranslations();
+    renderResourceBar();
+    renderWorkshopSelects();
+    renderTelemetryAndChecklist();
+    renderBlueprints();
+    renderMissionsAndContracts();
+    renderRnDAndFacilities();
+    renderFinanceTab();
+    renderFlightLogsTab();
+  }
+
+  // =========================================================================
+  // 7. EVENT LISTENERS & EXPOSED ACTIONS
+  // =========================================================================
+  $("langToggleBtn").addEventListener("click", () => {
+    state.lang = state.lang === "en" ? "zh" : "en";
+    saveState();
+    renderAll();
+    if (state.bankrupt && $("modalBackdrop").classList.contains("show")) {
+      showBankruptcyModal();
+    }
+  });
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      $("tab-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  $("bannerFinanceTabBtn").addEventListener("click", () => {
+    document.querySelector('.tab-btn[data-tab="finance"]').click();
+  });
+
+  $("bannerAidBtn").addEventListener("click", claimEmergencyAid);
+  $("claimAidBtn").addEventListener("click", claimEmergencyAid);
+
+  ["s1Engine", "s1Structure", "s2Engine", "s2Structure", "payloadType"].forEach(id => {
+    $(id).addEventListener("change", e => {
+      state.design[id] = e.target.value;
+      saveState();
+      renderWorkshopSelects();
+      renderTelemetryAndChecklist();
+    });
+  });
+
+  ["s1Fuel", "s2Fuel", "payloadMass"].forEach(id => {
+    $(id).addEventListener("input", e => {
+      state.design[id] = Number(e.target.value);
+      saveState();
+      renderWorkshopSelects();
+      renderTelemetryAndChecklist();
+    });
+  });
+
+  ["useStage2", "equipRecovery", "buyInsurance"].forEach(id => {
+    $(id).addEventListener("change", e => {
+      state.design[id] = e.target.checked;
+      saveState();
+      renderWorkshopSelects();
+      renderTelemetryAndChecklist();
+    });
+  });
+
+  $("saveBpBtn").addEventListener("click", () => {
+    const rawName = $("bpNameInput").value.trim();
+    const name = rawName || (state.lang === "zh" ? `定制火箭方案 #${state.blueprints.length + 1}` : `Custom Vehicle #${state.blueprints.length + 1}`);
+    state.blueprints.unshift({
+      id: "bp_" + Date.now(),
+      name,
+      design: JSON.parse(JSON.stringify(state.design))
+    });
+    $("bpNameInput").value = "";
+    saveState();
+    renderBlueprints();
+    showToast(t().toastBpSaved(name));
+  });
+
+  $("sellAssetsBtn").addEventListener("click", () => {
+    if (state.crisisStage !== 2) return;
+    state.reputation = Math.max(0, state.reputation - 3);
+    applyFundsDelta(18000, I18N.en.ledSellAssets, I18N.zh.ledSellAssets);
+    saveState();
+    renderAll();
+    showToast(t().toastSoldAssets);
+  });
+
+  $("downgradePadBtn").addEventListener("click", () => {
+    if (state.crisisStage !== 2) return;
+    if (state.padLevel > 1) {
+      state.padLevel -= 1;
+      applyFundsDelta(15000, I18N.en.ledDowngradePad, I18N.zh.ledDowngradePad);
+    } else if (state.labLevel > 1) {
+      state.labLevel -= 1;
+      applyFundsDelta(15000, I18N.en.ledDowngradeLab, I18N.zh.ledDowngradeLab);
+    }
+    saveState();
+    renderAll();
+    showToast(t().toastDowngraded);
+  });
+
+  $("oneTimeRestructureBtn").addEventListener("click", () => {
+    if (state.crisisStage !== 2 || state.restructurePlanUsed || state.funds >= 0) return;
+    state.restructurePlanUsed = true;
+    const debtCut = Math.round(Math.abs(state.funds) * 0.40);
+    state.reputation = Math.max(0, state.reputation - 8);
+    applyFundsDelta(debtCut, I18N.en.ledDebtRestruct, I18N.zh.ledDebtRestruct);
+    saveState();
+    renderAll();
+    showToast(t().toastRestructDone(fmtMoney(debtCut)));
+  });
+
+  $("launchBtn").addEventListener("click", executeLaunch);
+  $("resetDesignBtn").addEventListener("click", () => {
+    state.design = getDefaultState().design;
+    saveState();
+    renderWorkshopSelects();
+    renderTelemetryAndChecklist();
+    showToast(t().toastResetDesign);
+  });
+
+  $("advanceMonthBtn").addEventListener("click", advanceMonthSettlement);
+  $("manualSaveBtn").addEventListener("click", () => saveState(true));
+  $("resetCampaignBtn").addEventListener("click", () => {
+    const L = t();
+    $("modalContent").innerHTML = `
+      <h3>${L.resetModalTitle}</h3>
+      <p style="color:var(--muted);font-size:13px">${L.resetModalDesc}</p>
+      <div class="actions">
+        <button class="danger-btn" onclick="window._app.hardResetCampaign()">${L.btnConfirmReset}</button>
+        <button class="secondary" onclick="document.getElementById('modalBackdrop').classList.remove('show')">${L.btnCancel}</button>
+      </div>
+    `;
+    $("modalBackdrop").classList.add("show");
+  });
+
+  window._app = {
+    loadBlueprint(id) {
+      const bp = state.blueprints.find(b => b.id === id);
+      if (!bp) return;
+      state.design = JSON.parse(JSON.stringify(bp.design));
+      saveState();
+      renderWorkshopSelects();
+      renderTelemetryAndChecklist();
+      showToast(t().toastBpLoaded(bp.name));
+    },
+    duplicateBlueprint(id) {
+      const bp = state.blueprints.find(b => b.id === id);
+      if (!bp) return;
+      const copyName = bp.name + (state.lang === "zh" ? " (副本)" : " (Copy)");
+      state.blueprints.unshift({
+        id: "bp_" + Date.now(),
+        name: copyName,
+        design: JSON.parse(JSON.stringify(bp.design))
+      });
+      saveState();
+      renderBlueprints();
+      showToast(t().toastBpDup(copyName));
+    },
+    deleteBlueprint(id) {
+      state.blueprints = state.blueprints.filter(b => b.id !== id);
+      saveState();
+      renderBlueprints();
+    },
+    selectCampaignMission(id) {
+      if (state.activeContract) return;
+      state.selectedMissionId = id;
+      const m = CAMPAIGN_MISSIONS.find(x => x.id === id);
+      if (m && m.recommendedPayload) {
+        state.design.payloadType = m.recommendedPayload;
+        state.design.payloadMass = Math.max(state.design.payloadMass, m.minPayload);
+      }
+      saveState();
+      renderAll();
+      showToast(t().toastTargetSet(`${m.code} · ${loc(m.title)}`));
+    },
+    acceptContract(id) {
+      if (state.activeContract || state.bankrupt) return;
+      const c = CONTRACT_POOL.find(x => x.id === id);
+      if (!c) return;
+      const advancePaid = Math.round(c.payout * 0.25);
+      state.activeContract = { ...c, advancePaid };
+      state.design.payloadMass = Math.max(state.design.payloadMass, c.minPayload);
+      applyFundsDelta(advancePaid, I18N.en.ledContractSign(c.title.en), I18N.zh.ledContractSign(c.title.zh));
+      saveState();
+      renderAll();
+      showToast(t().toastContractSigned(loc(c.title), fmtMoney(advancePaid)));
+    },
+    cancelContract() {
+      if (!state.activeContract) return;
+      const cPool = CONTRACT_POOL.find(x => x.id === state.activeContract.id) || state.activeContract;
+      const refund = Math.round(state.activeContract.advancePaid * 0.50);
+      state.activeContract = null;
+      applyFundsDelta(-refund, I18N.en.ledContractCancel(locObjLang(cPool.title, "en")), I18N.zh.ledContractCancel(locObjLang(cPool.title, "zh")));
+      saveState();
+      renderAll();
+      showToast(t().toastContractCanceled(fmtMoney(refund)));
+    },
+    unlockTech(id) {
+      if (state.crisisStage >= 1) return;
+      const tech = TECH_TREE.find(x => x.id === id);
+      if (!tech || state.unlockedTech.includes(id) || state.science < tech.costSci) return;
+      state.science -= tech.costSci;
+      state.unlockedTech.push(id);
+      saveState();
+      renderAll();
+      showToast(t().toastTechUnlocked(loc(tech.name)));
+    },
+    upgradeFacility(type) {
+      if (state.crisisStage >= 2) return;
+      if (type === "pad" && state.padLevel < 3) {
+        const cost = state.padLevel === 1 ? 35000 : 65000;
+        if (!canAffordExpenditure(cost)) return;
+        state.padLevel += 1;
+        applyFundsDelta(-cost, I18N.en.ledUpgradePad(state.padLevel), I18N.zh.ledUpgradePad(state.padLevel));
+      } else if (type === "lab" && state.labLevel < 3) {
+        const cost = state.labLevel === 1 ? 30000 : 55000;
+        if (!canAffordExpenditure(cost)) return;
+        state.labLevel += 1;
+        applyFundsDelta(-cost, I18N.en.ledUpgradeLab(state.labLevel), I18N.zh.ledUpgradeLab(state.labLevel));
+      }
+      saveState();
+      renderAll();
+      showToast(t().toastFacUpgraded);
+    },
+    hardResetCampaign() {
+      const keepLang = state.lang;
+      state = getDefaultState();
+      state.lang = keepLang;
+      saveState();
+      $("modalBackdrop").classList.remove("show");
+      $("rocket").classList.remove("fly", "fail-arc");
+      $("boosterDrop").classList.remove("active");
+      $("flightCaption").textContent = "FLIGHT DIRECTOR: STANDBY";
+      $("flightPhaseTag").textContent = t().phaseStandby;
+      $("flightPhaseTag").className = "tag";
+      $("repStandbyTitle").textContent = t().repStandbyTitle;
+      $("repStandbyDesc").textContent = t().repStandbyDesc;
+      renderAll();
+      showToast(t().toastNewCampaign);
+    }
+  };
+
+  // Initial Boot
+  renderAll();
+  $("flightPhaseTag").textContent = t().phaseStandby;
+  $("repStandbyTitle").textContent = t().repStandbyTitle;
+  $("repStandbyDesc").textContent = t().repStandbyDesc;
+  if (state.bankrupt) {
+    showBankruptcyModal();
+  }
+})();
+</script>
+</body>
+</html>
