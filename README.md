@@ -1,6 +1,6 @@
 # APOGEE: Lunar Mission
 
-APOGEE: Lunar Mission is a browser-based rocket building and space agency survival game created by **Team Peace** for the NASA Space Apps Challenge 2026 (Space Mission Design Game* challenge).
+APOGEE: Lunar Mission is a browser-based rocket building and space agency survival game created by **Team Peace** for the NASA Space Apps Challenge 2026 (Space Mission Design Game challenge).
 
 In this game, you build multi-stage rockets, check real-time flight data, unlock new tech, and manage your budget to reach the Moon without going bankrupt.
 
